@@ -15,13 +15,27 @@ def start_server():
     # Try to Bind the socket to host and port
     try:
         server_socket.bind((HOST, PORT))
-        print(f"Test: Server successfully bound to {HOST}:{PORT}") # Temp test
     except Exception as e: # Gracefully handle errors
         print(f"Error Failed to bind server: {e}") 
         sys.exit(1)
 
-    # Temp end for test
-    server_socket.close()
+    # listening for incoming connections
+    server_socket.listen(5)
+    print(f"Server is listening on port {PORT}... Press Ctrl+C to stop.")
+
+    try:
+        while True:
+            client_socket, address = server_socket.accept()
+            print(f"Connection accepted from {address}")
+            
+            # Temp Close
+            client_socket.close()
+
+    # Stop Function
+    except KeyboardInterrupt:
+        print("\nServer shutting down...")
+    finally:
+        server_socket.close()
 
 # The Start Function
 if __name__ == "__main__":
