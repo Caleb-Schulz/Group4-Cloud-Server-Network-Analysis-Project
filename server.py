@@ -136,7 +136,40 @@ def handle_client(client_socket, address):
                         response = f"Error: Failed to delete file -> {e}\n"
 
             elif command == "SUBFOLDER":
-                response = handle_subfolder_command(args) # Placeholder
+                sub_parts = args.split(' ', 1)
+                action = sub_parts[0].lower() if len(sub_parts) > 0 else ""
+                subpath = sub_parts[1].strip() if len(sub_parts) > 1 else ""
+                
+                if not action or not subpath:
+                    response = "Error: Invalid syntax. Use 'SUBFOLDER {create|delete} <path>'\n"
+                else:
+                    target_dir = os.path.abspath(os.path.join(STORAGE_DIR, subpath))
+                    
+                    # Ensure target stays inside STORAGE_DIR
+                    if not target_dir.startswith(os.path.abspath(STORAGE_DIR)):
+                        response = "Error: Invalid path outside storage directory.\n"
+                    elif action == "create":
+                        try:
+                            os.makedirs(target_dir, exist_ok=True)
+                            response = f"Subfolder '{subpath}' created successfully.\n"
+                            print(f"[{address}] Successfully created subfolder: {subpath}")
+                        except Exception as e:
+                            response = f"Error: Failed to create subfolder -> {e}\n"
+                    elif action == "delete":
+                        try:
+                            if os.path.exists(target_dir) and os.path.isdir(target_dir):
+                                os.rmdir(target_dir)
+                                response = f"Subfolder '{subpath}' deleted successfully.\n"
+                                print(f"[{address}] Successfully deleted subfolder: {subpath}")
+                            else:
+                                response = f"Error: Subfolder '{subpath}' does not exist.\n"
+                        except OSError:
+                            response = f"Error: Subfolder '{subpath}' is not empty or cannot be removed.\n"
+                        except Exception as e:
+                            response = f"Error: Failed to delete subfolder -> {e}\n"
+                    else:
+                        response = f"Error: Unknown subfolder action '{action}'. Use 'create' or 'delete'.\n"
+
             elif command == "AUTH":
                 response = handle_auth_command(args) # Placeholder
             else: # Gracefully handle errors
@@ -145,7 +178,7 @@ def handle_client(client_socket, address):
             client_socket.sendall(response.encode('utf-8'))
         
     except ConnectionResetError: # Gracefully handle errors
-        print(f"Error: Client {address} abruptly disconnected.")
+        
     finally:
         client_socket.close()
         print(f"Connection closed for {address}")
