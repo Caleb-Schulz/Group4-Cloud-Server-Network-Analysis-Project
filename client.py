@@ -25,3 +25,30 @@
      * Description: Creates or deletes a nested folder within storage.
      * Response: "Subfolder '[path]' created/deleted successfully.\n"
 """
+
+# This is an authentication test I made that runs from a local machine,
+# It should make a good starting point, but feel free to change it
+import socket
+
+HOST = "136.115.113.19"  # GCP static IP
+PORT = 5000
+
+client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+client.connect((HOST, PORT))
+
+# Reads the server's greeting
+greeting = client.recv(1024).decode().strip()
+print("Server greeting:", greeting)
+
+# You will need to make a log in screen
+
+# Send username and PLAINTEXT password separated by a colon
+auth_payload = "name:password\n" # placeholders
+client.sendall(auth_payload.encode('utf-8'))
+
+# Reads the server's response
+response = client.recv(1024).decode().strip()
+print("Auth Response:", response)
+
+# Stops after Authentication
+client.close()
