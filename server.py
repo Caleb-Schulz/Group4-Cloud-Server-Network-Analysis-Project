@@ -44,7 +44,42 @@ def handle_client(client_socket, address):
                     response = f"ERROR: Could not list directory -> {e}\n"
 
             elif command == "UPLOAD":
-                response = handle_upload_command(args) # Placeholder
+                filename = args.strip()
+                if not filename:
+                    response = "ERROR: No filename provided.\n"
+                    client_socket.sendall(response.encode('utf-8'))
+                    continue
+                    
+                file_path = os.path.join(STORAGE_DIR, filename)
+                
+                # Check if file already exists
+                if os.path.exists(file_path):
+                    client_socket.sendall(b"File already exists. Overwrite? (y/n): ")
+                    choice = client_socket.recv(BUFFER_SIZE).decode('utf-8').strip().lower()
+                    if choice != 'y':
+                        client_socket.sendall(b"Upload cancelled by user.\n")
+                        continue
+                
+                # Tell the client we are ready to receive the file
+                client_socket.sendall(b"Ready, send file data\n")
+                
+                try:
+                    # Receive and save the file data
+                    with open(file_path, 'wb') as f:
+                        client_socket.settimeout(2.0) 
+                        while True:
+                            try:
+                                chunk = client_socket.recv(BUFFER_SIZE)
+                                if not chunk:
+                                    break
+                                f.write(chunk)
+                            except socket.timeout:
+                                break
+                    client_socket.settimeout(None) 
+                    response = f"File '{filename}' uploaded successfully.\n"
+                except Exception as e:
+                    response = f"Failed to save file -> {e}\n"
+
             elif command == "DOWNLOAD":
                 response = handle_download_command(args) # Placeholder
             elif command == "DELETE":
