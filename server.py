@@ -9,10 +9,10 @@ HOST = '0.0.0.0'  # Listens on all network interfaces
 PORT = 5000       # Project port (The firewall rules have this port open)
 BUFFER_SIZE = 4096
 
-# Create the dedicated storage directory
-STORAGE_DIR = os.path.join(os.getcwd(), "server_storage")
+# Link with persistent storage
+STORAGE_DIR = "/mnt/server_storage"
 if not os.path.exists(STORAGE_DIR):
-    os.makedirs(STORAGE_DIR)
+    os.makedirs(STORAGE_DIR, exist_ok=True)
 
 def authenticate_client(auth_data):
     # Verifies client credentials against environment variables
