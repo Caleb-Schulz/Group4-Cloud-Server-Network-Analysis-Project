@@ -12,8 +12,21 @@ def handle_client(client_socket, address):
     # Handles the speration of client connections in to diffrent threads
     print(f"Handling client {address} in a new thread.")
     try:
-        # here next
-        pass
+        while True:
+            # Get data from the client socket 
+            data = client_socket.recv(BUFFER_SIZE)
+            if not data:
+                break # Client disconnected
+                
+            message = data.decode('utf-8').strip()
+            print(f"[{address}] Received: {message}")
+            
+            # Temp echo
+            response = f"ACK: Server received '{message}'"
+            client_socket.sendall(response.encode('utf-8'))
+        
+    except ConnectionResetError: # Gracefully handle errors
+        print(f"Error Client {address} abruptly disconnected.")
     finally:
         client_socket.close()
         print(f"Connection closed for {address}")
