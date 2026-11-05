@@ -26,7 +26,7 @@ def handle_client(client_socket, address):
             message = data.decode('utf-8').strip()
             print(f"[{address}] Received: {message}")
             
-            # Simple command parsing (splitting command and arguments)
+            # Simple command parsing
             parts = message.split(' ', 1)
             command = parts[0].upper()
             args = parts[1] if len(parts) > 1 else ""
@@ -41,12 +41,12 @@ def handle_client(client_socket, address):
                     else:
                         response = "Storage directory is empty.\n"
                 except Exception as e:
-                    response = f"ERROR: Could not list directory -> {e}\n"
+                    response = f"Error: Could not list directory -> {e}\n"
 
             elif command == "UPLOAD":
                 filename = args.strip()
                 if not filename:
-                    response = "ERROR: No filename provided.\n"
+                    response = "Error: No filename provided.\n"
                     client_socket.sendall(response.encode('utf-8'))
                     continue
                     
@@ -78,10 +78,40 @@ def handle_client(client_socket, address):
                     client_socket.settimeout(None) 
                     response = f"File '{filename}' uploaded successfully.\n"
                 except Exception as e:
-                    response = f"Failed to save file -> {e}\n"
+                    response = f"Error:Failed to save file -> {e}\n"
 
             elif command == "DOWNLOAD":
-                response = handle_download_command(args) # Placeholder
+                filename = args.strip()
+                if not filename:
+                    response = "No filename provided.\n"
+                    client_socket.sendall(response.encode('utf-8'))
+                    continue
+                    
+                file_path = os.path.join(STORAGE_DIR, filename)
+                
+                # Check if file exists on the server
+                if not os.path.exists(file_path) or not os.path.isfile(file_path):
+                    response = f"Error: File '{filename}' does not exist.\n"
+                    client_socket.sendall(response.encode('utf-8'))
+                else:
+                    try:
+                        file_size = os.path.getsize(file_path)
+                        # Signal ready and send file size info
+                        client_socket.sendall(f"Sending file ({file_size} bytes)\n".encode('utf-8'))
+                        
+                        # Open and stream the file data in chunks
+                        with open(file_path, 'rb') as f:
+                            while True:
+                                chunk = f.read(BUFFER_SIZE)
+                                if not chunk:
+                                    break
+                                client_socket.sendall(chunk)
+                                
+                        print(f"[{address}] Successfully sent file: {filename}")
+                    except Exception as e:
+                        response = f"Error: Failed to send file -> {e}\n"
+                        client_socket.sendall(response.encode('utf-8'))
+
             elif command == "DELETE":
                 response = handle_delete_command(args) # Placeholder
             elif command == "SUBFOLDER":
@@ -94,7 +124,7 @@ def handle_client(client_socket, address):
             client_socket.sendall(response.encode('utf-8'))
         
     except ConnectionResetError: # Gracefully handle errors
-        print(f"Error Client {address} abruptly disconnected.")
+        print(f"Error: Client {address} abruptly disconnected.")
     finally:
         client_socket.close()
         print(f"Connection closed for {address}")
@@ -109,8 +139,8 @@ def start_server():
     # Try to Bind the socket to host and port
     try:
         server_socket.bind((HOST, PORT))
-    except Exception as e: # Gracefully handle errors
-        print(f"Error Failed to bind server: {e}") 
+    except Exception as e:
+        print(f"Error: Failed to bind server: {e}") 
         sys.exit(1)
 
     # listening for incoming connections
