@@ -2,6 +2,7 @@ import socket
 import threading
 import sys
 import os
+import hashlib
 
 # Server Configuration
 HOST = '0.0.0.0'  # Listens on all network interfaces
@@ -13,10 +14,38 @@ STORAGE_DIR = os.path.join(os.getcwd(), "server_storage")
 if not os.path.exists(STORAGE_DIR):
     os.makedirs(STORAGE_DIR)
 
+def authenticate_client(auth_data):
+    # Verifies client credentials against environment variables
+
+    expected_user = os.getenv("SERVER_USER", "admin")
+    expected_pass_hash = os.getenv("SERVER_PASS_HASH", hashlib.sha256("securepassword123".encode()).hexdigest())
+    
+    try:
+        parts = auth_data.split(':', 1)
+        if len(parts) != 2:
+            return False
+        user, password = parts[0], parts[1]
+        
+        pass_hash = hashlib.sha256(password.encode()).hexdigest()
+        return user == expected_user and pass_hash == expected_pass_hash
+    except Exception:
+        return False
+
 def handle_client(client_socket, address):
     # Handles the speration of client connections in to diffrent threads
     print(f"Handling client {address} in a new thread.")
     try:
+        # Require authentication before allowing any commands
+        client_socket.sendall(b"AUTH_REQUIRED\n")
+        auth_data = client_socket.recv(BUFFER_SIZE).decode('utf-8').strip()
+        
+        # Verify credentials against environment variables
+        if not authenticate_client(auth_data):
+            client_socket.sendall(b"ERROR: Authentication failed.\n")
+            return # Drop connection
+            
+        client_socket.sendall(b"SUCCESS: Authenticated\n")
+        
         while True:
             # Get data from the client socket 
             data = client_socket.recv(BUFFER_SIZE)
@@ -170,14 +199,13 @@ def handle_client(client_socket, address):
                     else:
                         response = f"Error: Unknown subfolder action '{action}'. Use 'create' or 'delete'.\n"
 
-            elif command == "AUTH":
-                response = handle_auth_command(args) # Placeholder
             else: # Gracefully handle errors
                 response = f"ERROR: Unknown command '{command}'\n"
                 
             client_socket.sendall(response.encode('utf-8'))
         
     except ConnectionResetError: # Gracefully handle errors
+        print(f"Error: Client {address} abruptly disconnected.")
         
     finally:
         client_socket.close()
