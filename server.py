@@ -113,7 +113,28 @@ def handle_client(client_socket, address):
                         client_socket.sendall(response.encode('utf-8'))
 
             elif command == "DELETE":
-                response = handle_delete_command(args) # Placeholder
+                filename = args.strip()
+                if not filename:
+                    response = "Error: No filename provided.\n"
+                    client_socket.sendall(response.encode('utf-8'))
+                    continue
+                    
+                file_path = os.path.join(STORAGE_DIR, filename)
+                
+                # Check if file exists
+                if not os.path.exists(file_path) or not os.path.isfile(file_path):
+                    response = f"Error: File '{filename}' does not exist.\n"
+                else:
+                    try:
+                        # Try to delete the file
+                        os.remove(file_path)
+                        response = f"File '{filename}' deleted successfully.\n"
+                        print(f"[{address}] Successfully deleted file: {filename}")
+                    except PermissionError:
+                        response = f"Error: File '{filename}' is currently being processed or locked.\n"
+                    except Exception as e:
+                        response = f"Error: Failed to delete file -> {e}\n"
+
             elif command == "SUBFOLDER":
                 response = handle_subfolder_command(args) # Placeholder
             elif command == "AUTH":
