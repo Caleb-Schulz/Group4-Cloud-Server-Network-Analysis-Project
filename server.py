@@ -8,6 +8,11 @@ HOST = '0.0.0.0'  # Listens on all network interfaces
 PORT = 5000       # Project port (The firewall rules have this port open)
 BUFFER_SIZE = 4096
 
+# Create the dedicated storage directory
+STORAGE_DIR = os.path.join(os.getcwd(), "server_storage")
+if not os.path.exists(STORAGE_DIR):
+    os.makedirs(STORAGE_DIR)
+
 def handle_client(client_socket, address):
     # Handles the speration of client connections in to diffrent threads
     print(f"Handling client {address} in a new thread.")
@@ -28,7 +33,16 @@ def handle_client(client_socket, address):
             
             # Route the commands
             if command == "DIR":
-                response = handle_dir_command() # Placeholder
+                try:
+                    files = os.listdir(STORAGE_DIR)
+                    if files:
+                        file_list = ", ".join(files)
+                        response = f"Files in storage -> {file_list}\n"
+                    else:
+                        response = "Storage directory is empty.\n"
+                except Exception as e:
+                    response = f"ERROR: Could not list directory -> {e}\n"
+
             elif command == "UPLOAD":
                 response = handle_upload_command(args) # Placeholder
             elif command == "DOWNLOAD":
