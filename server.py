@@ -21,8 +21,27 @@ def handle_client(client_socket, address):
             message = data.decode('utf-8').strip()
             print(f"[{address}] Received: {message}")
             
-            # Temp echo
-            response = f"ACK: Server received '{message}'"
+            # Simple command parsing (splitting command and arguments)
+            parts = message.split(' ', 1)
+            command = parts[0].upper()
+            args = parts[1] if len(parts) > 1 else ""
+            
+            # Route the commands
+            if command == "DIR":
+                response = handle_dir_command() # Placeholder
+            elif command == "UPLOAD":
+                response = handle_upload_command(args) # Placeholder
+            elif command == "DOWNLOAD":
+                response = handle_download_command(args) # Placeholder
+            elif command == "DELETE":
+                response = handle_delete_command(args) # Placeholder
+            elif command == "SUBFOLDER":
+                response = handle_subfolder_command(args) # Placeholder
+            elif command == "AUTH":
+                response = handle_auth_command(args) # Placeholder
+            else: # Gracefully handle errors
+                response = f"ERROR: Unknown command '{command}'\n"
+                
             client_socket.sendall(response.encode('utf-8'))
         
     except ConnectionResetError: # Gracefully handle errors
