@@ -75,7 +75,13 @@ def handle_client(client_socket, address):
             # Route the commands
             if command == "DIR":
                 try:
-                    files = os.listdir(STORAGE_DIR)
+                    # Filter out server script, environment files, and hidden files
+                    ignored_files = {"server.py", ".env", "lost+found"}
+                    files = [
+                        f for f in os.listdir(STORAGE_DIR) 
+                        if f not in ignored_files and not f.startswith(".")
+                    ]
+
                     if files:
                         file_list = ", ".join(files)
                         response = f"Files in storage -> {file_list}\n"
@@ -91,18 +97,24 @@ def handle_client(client_socket, address):
                     client_socket.sendall(response.encode('utf-8'))
                     continue
                     
-                file_path = os.path.join(STORAGE_DIR, filename)
+                # Secure path validation
+                file_path = os.path.abspath(os.path.join(STORAGE_DIR, filename))
+                if not file_path.startswith(os.path.abspath(STORAGE_DIR)):
+                    response = "Error: Invalid path outside storage directory.\n"
+                    client_socket.sendall(response.encode('utf-8'))
+                    continue
                 
                 # Check if file already exists
                 if os.path.exists(file_path):
-                    client_socket.sendall(b"File already exists. Overwrite? (y/n): ")
+                    client_socket.sendall(b"File already exists. Overwrite? (y/n): \n")
                     choice = client_socket.recv(BUFFER_SIZE).decode('utf-8').strip().lower()
                     if choice != 'y':
-                        client_socket.sendall(b"Upload cancelled by user.\n")
+                        response = "Upload cancelled by user.\n"
+                        client_socket.sendall(response.encode('utf-8'))
                         continue
-                
-                # Tell the client we are ready to receive the file
-                client_socket.sendall(b"Ready, send file data\n")
+                else:
+                    # Tells the client we are ready to receive the file
+                    client_socket.sendall(b"Ready, send file data\n")
                 
                 try:
                     # Receive and save the file data
@@ -128,7 +140,12 @@ def handle_client(client_socket, address):
                     client_socket.sendall(response.encode('utf-8'))
                     continue
                     
-                file_path = os.path.join(STORAGE_DIR, filename)
+                # Secure path validation
+                file_path = os.path.abspath(os.path.join(STORAGE_DIR, filename))
+                if not file_path.startswith(os.path.abspath(STORAGE_DIR)):
+                    response = "Error: Invalid path outside storage directory.\n"
+                    client_socket.sendall(response.encode('utf-8'))
+                    continue
                 
                 # Check if file exists on the server
                 if not os.path.exists(file_path) or not os.path.isfile(file_path):
@@ -160,7 +177,12 @@ def handle_client(client_socket, address):
                     client_socket.sendall(response.encode('utf-8'))
                     continue
                     
-                file_path = os.path.join(STORAGE_DIR, filename)
+                # Secure path validation
+                file_path = os.path.abspath(os.path.join(STORAGE_DIR, filename))
+                if not file_path.startswith(os.path.abspath(STORAGE_DIR)):
+                    response = "Error: Invalid path outside storage directory.\n"
+                    client_socket.sendall(response.encode('utf-8'))
+                    continue
                 
                 # Check if file exists
                 if not os.path.exists(file_path) or not os.path.isfile(file_path):
