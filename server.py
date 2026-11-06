@@ -32,6 +32,8 @@ def authenticate_client(auth_data):
     if not EXPECTED_USER or not EXPECTED_PASS_HASH:
         raise ValueError("CRITICAL: SERVER_USER and SERVER_PASS_HASH must be set in the .env file")
     
+    # Needs to be fixed :(
+
     try:
         parts = auth_data.split(':', 1)
         if len(parts) != 2:
