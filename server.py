@@ -15,11 +15,9 @@ if not os.path.exists(STORAGE_DIR):
     os.makedirs(STORAGE_DIR, exist_ok=True)
 
 def authenticate_client(auth_data):
-    # Verifies client credentials against environment variables
-
-    expected_user = os.getenv("SERVER_USER", "admin")
-    expected_pass_hash = os.getenv("SERVER_PASS_HASH", hashlib.sha256("securepassword123".encode()).hexdigest())
     
+    # Needs to be fixed :(
+
     try:
         parts = auth_data.split(':', 1)
         if len(parts) != 2:
