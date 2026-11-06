@@ -14,6 +14,15 @@ STORAGE_DIR = "/mnt/server_storage"
 if not os.path.exists(STORAGE_DIR):
     os.makedirs(STORAGE_DIR, exist_ok=True)
 
+# loads the .env file into environment variables
+env_path = os.path.join(STORAGE_DIR, ".env")
+if os.path.exists(env_path):
+    with open(env_path, "r") as f:
+        for line in f:
+            if "=" in line and not line.startswith("#"):
+                key, val = line.strip().split("=", 1)
+                os.environ[key.strip()] = val.strip()
+
 def authenticate_client(auth_data):
     # Fetch credentials from .env
     EXPECTED_USER = os.getenv("SERVER_USER")
