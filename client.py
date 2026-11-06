@@ -1,7 +1,7 @@
 """
 1. AUTHENTICATION HANDSHAKE (Required immediately upon connection):
    - Server sends: "AUTH_REQUIRED\n"
-   - Client sends: "username:password\n" (Password hashed/checked server-side)
+   - Client sends: "username:sha256_hash\n" (The password is hashed locally on the client side using SHA-256; the plaintext password never crosses the network)
    - Server responds: "SUCCESS: Authenticated\n" OR "ERROR: Authentication failed.\n"
 
 2. COMMAND FORMATS (Sent as plain text strings ending with '\n' or commands):
@@ -29,6 +29,7 @@
 # This is an authentication test I made that runs from a local machine,
 # It should make a good starting point, but feel free to change it
 import socket
+import hashlib
 
 HOST = "136.115.113.19"  # GCP static IP
 PORT = 5000
@@ -40,10 +41,15 @@ client.connect((HOST, PORT))
 greeting = client.recv(1024).decode().strip()
 print("Server greeting:", greeting)
 
-# You will need to make a log in screen
+# Prompt user to enter credentials dynamically
+username = input("Enter username: ").strip()
+plaintext_password = input("Enter password: ").strip()
 
-# Send username and PLAINTEXT password separated by a colon
-auth_payload = "name:password\n" # placeholders
+# Hash the password locally using SHA-256 (plaintext never touches the wire)
+password_hash = hashlib.sha256(plaintext_password.encode('utf-8')).hexdigest()
+
+# Send username and the SHA-256 hash separated by a colon
+auth_payload = f"{username}:{password_hash}\n"
 client.sendall(auth_payload.encode('utf-8'))
 
 # Reads the server's response
