@@ -15,19 +15,22 @@ if not os.path.exists(STORAGE_DIR):
     os.makedirs(STORAGE_DIR, exist_ok=True)
 
 def authenticate_client(auth_data):
-    # Verifies client credentials against environment variables
+    # Fetch credentials from .env
+    EXPECTED_USER = os.getenv("SERVER_USER")
+    EXPECTED_PASS_HASH = os.getenv("SERVER_PASS_HASH")
 
-    expected_user = os.getenv("SERVER_USER", "admin")
-    expected_pass_hash = os.getenv("SERVER_PASS_HASH", hashlib.sha256("securepassword123".encode()).hexdigest())
+    # Ensures that credentials exist
+    if not EXPECTED_USER or not EXPECTED_PASS_HASH:
+        raise ValueError("CRITICAL: SERVER_USER and SERVER_PASS_HASH must be set in the .env file")
     
     try:
         parts = auth_data.split(':', 1)
         if len(parts) != 2:
             return False
-        user, password = parts[0], parts[1]
+        user, client_pass_hash = parts[0], parts[1].strip()
         
-        pass_hash = hashlib.sha256(password.encode()).hexdigest()
-        return user == expected_user and pass_hash == expected_pass_hash
+        # Compares the incoming client hash and name with the stored .env hash and name
+        return user == EXPECTED_USER and client_pass_hash == EXPECTED_PASS_HASH
     except Exception:
         return False
 
