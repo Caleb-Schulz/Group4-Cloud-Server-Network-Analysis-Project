@@ -9,7 +9,7 @@
 #how to compile: python -m py_compile [filename.py]
 #how to run: python3 [filename].py
 
-print("Which operation do you want to perform?\n")
+print("Choose a file operation you want to perform\n")
 
 print("Enter 1 for Upload")
 print("Enter 2 for Download")
@@ -18,18 +18,41 @@ print("Enter 4 for View Directory")
 print("Enter 5 for Create subfolder")
 print("Enter 6 for Delete subfolder")
 
-file_operation=input("Enter a choice: ")
+file_operation=int(input("Enter a choice: "))
 
 
-def chooseFileOperation(file_operation):
-#if file operation number invalid print a statement
-#make user re-enter it again 
-    if(file_operation > 6 or file_operation < 1):
-        print("Invalid file operation. Please re-enter a valid number choice:\n")
-        file_operation=input("Enter a choice: ")
+#if-statement file operation number invalid print a statement
+#make user re-enter it again
+if file_operation > 6 or file_operation < 1:
+    print("Invalid file operation. Please re-enter a valid number choice:\n")
+    file_operation=int(input("Enter a choice "))
 
 
-#upload
-def upload(file_operation):
-    print("If you want to upload a file enter 1 and proceed to enter filename:")
-    affirm_upload=input("")
+#upload:
+if file_operation == 1:
+    print("you chose to upload")
+
+
+#download:
+elif file_operation == 2:
+    print("you chose to download")
+
+#delete:
+elif file_operation == 3:
+    print("you chose to delete")
+
+
+#view directory:
+elif file_operation == 4:
+    print("you chose to view directory")
+
+
+#create a new subfolder:
+elif file_operation == 5:
+    print("you chose to create a new subfolder")
+
+
+#delete an existing subfolder:
+elif file_operation == 6:
+    print("you chose to delete an existing subfolder")
+
