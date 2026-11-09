@@ -1,3 +1,6 @@
+import requests
+
+
 #handle file upload, download, directory operations
 #provide feedback to user based on status of file transfer and operations
 #file operations: connect server IP port (initiates connection from client to server with 
@@ -31,6 +34,16 @@ if file_operation > 6 or file_operation < 1:
 #upload:
 if file_operation == 1:
     print("you chose to upload")
+    #text files = .txt
+    #video files = .mp4
+    #audio files = .mp3
+
+    #upload a file to the server
+    #therefore we need the link to the server to bethe url
+
+    # url = [server link]
+    text_file =  
+
 
 
 #download:
