@@ -16,15 +16,54 @@ If you are running this code first time, and you don't have streamlit installed,
 import streamlit as st
 import socket
 import os
-import json
+import threading
+import sys
+import hashlib
 
-# ---- CONFIGURATION (Network Connection & Logics) ----
+# -------- CONFIGURATION (Network Connection & Logics) --------
 
 HOST = '0.0.0.0'  # Listens on all network interfaces
 PORT = 5000       # Project port (The firewall rules have this port open)
 BUFFER_SIZE = 4096
 
-# ---- ESTABLISHING A CONNECTION ----
+# -------- ESTABLISHING A CONNECTION --------
 
 # working on it 
+
+# -------- STREAMLIT UI --------
+
+st.title("Cloud Server File Request & Transfer") # Title for the application
+
+st.sidebar.header("Navigation") # Makes a clickable sidebar "Navigation"
+
+menu = ["Connect", "Upload", "Download", "Delete", "Dir", "Subfolder"] # Array of File Operations
+
+choice = st.sidebar.selectbox("Select Action", menu) # Selectable File Opeations
+
+# ---- CONNECT ----
+
+# -- AUTHENTICATION --
+
+# wip ^^'
+
+# ---- UPLOAD ----
+
+
+
+# ---- DOWNLOAD ----
+
+
+
+# ---- DELETE ----
+
+
+
+# ---- DIR ----
+
+
+
+# ---- SUBFOLDER ----
+
+
+
 
