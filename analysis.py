@@ -32,10 +32,11 @@ class NetworkAnalyzer:
         conn.commit()
         conn.close()
 
+    # vvv saves metrics in database
     def save_transfer_metrics(self, operation, filename, file_size_bytes, transfer_time_sec):
         # b -> Mb
         file_size_mb = file_size_bytes / (1024 * 1024)
-
+        
 
 
 
