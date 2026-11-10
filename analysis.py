@@ -1,21 +1,21 @@
 
-import sqlite3
 # for python database
-import os
+import sqlite3
 # interaction with operating system
+import os
 
 class NetworkAnalyzer:
     # vvv initializes the network server and sets up database
     def __init__(self, db_name="network_metrics.db"):
-        self.db_name = db_name
         # saves database file name
+        self.db_name = db_name
         self.init_db()
 
 
     # vvv creates table to hold the transfer metrics
     def init_db(self):
-        conn = sqlite3.connect(self.db_name)
         # connects to database file
+        conn = sqlite3.connect(self.db_name)
         cursor = conn.cursor()
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS transfer_metrics (
@@ -32,7 +32,17 @@ class NetworkAnalyzer:
         conn.commit()
         conn.close()
 
+    def save_transfer_metrics(self, operation, filename, file_size_bytes, transfer_time_sec):
+        # b -> Mb
+        file_size_mb = file_size_bytes / (1024 * 1024)
+
+
+
+
+
+'''
 # testing parts 1-3
 if __name__ == "__main__":
     test_analyzer = NetworkAnalyzer()
     print("success")
+'''
