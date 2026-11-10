@@ -9,7 +9,7 @@ class NetworkAnalyzer:
     def __init__(self, db_name="network_metrics.db"):
         self.db_name = db_name
         # saves database file name
-        self.init.db()
+        self.init_db()
 
 
     # vvv creates table to hold the transfer metrics
@@ -28,3 +28,11 @@ class NetworkAnalyzer:
                 timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
             )
         ''')
+
+        conn.commit()
+        conn.close()
+
+# testing parts 1-3
+if __name__ == "__main__":
+    test_analyzer = NetworkAnalyzer()
+    print("success")
