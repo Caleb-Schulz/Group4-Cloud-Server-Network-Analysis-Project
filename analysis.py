@@ -12,7 +12,7 @@ class NetworkAnalyzer:
         self.init.db()
 
 
-    # vvv 
+    # vvv creates table to hold the transfer metrics
     def init_db(self):
         conn = sqlite3.connect(self.db_name)
         # connects to database file
@@ -21,10 +21,10 @@ class NetworkAnalyzer:
             CREATE TABLE IF NOT EXISTS transfer_metrics (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 operation TEXT NOT NULL,
-                filename TEXT NOT NULL
-                file_size_mb REAL NOT NULL
-                transfer_time_sec REAL NOT NULL
-                data_rate_mbps REAL NOT NULL
+                filename TEXT NOT NULL,
+                file_size_mb REAL NOT NULL,
+                transfer_time_sec REAL NOT NULL,
+                data_rate_mbps REAL NOT NULL,
                 timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
             )
         ''')
