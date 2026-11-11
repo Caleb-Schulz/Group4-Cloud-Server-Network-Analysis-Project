@@ -36,7 +36,12 @@ class NetworkAnalyzer:
     def save_transfer_metrics(self, operation, filename, file_size_bytes, transfer_time_sec):
         # b -> Mb
         file_size_mb = file_size_bytes / (1024 * 1024)
-        
+
+        # find data rate
+        if transfer_time_sec > 0:
+            data_rate_mbps = file_size_mb / transfer_time_sec
+        else:
+            data_rate_mbps = file_size_mb
 
 
 
