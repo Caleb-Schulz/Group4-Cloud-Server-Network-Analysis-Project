@@ -42,6 +42,10 @@ class NetworkAnalyzer:
             data_rate_mbps = file_size_mb / transfer_time_sec
         else:
             data_rate_mbps = file_size_mb
+        
+        # connects to database file
+        conn = sqlite3.connect(self.db_name)
+        cursor = conn.cursor()
 
 
 
