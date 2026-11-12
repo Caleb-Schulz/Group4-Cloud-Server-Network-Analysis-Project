@@ -63,7 +63,9 @@ class NetworkAnalyzer:
         cursor.excute('''
             SELECT * FROM transfer_metrics
         ''')
-        
+        rows = cursor.fetchall()
+        conn.close()
+        return rows
 
 
 '''
