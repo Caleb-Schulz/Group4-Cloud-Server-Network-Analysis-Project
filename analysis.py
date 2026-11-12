@@ -43,7 +43,6 @@ class NetworkAnalyzer:
         else:
             data_rate_mbps = file_size_mb
         
-        # connects to database file
         conn = sqlite3.connect(self.db_name)
         cursor = conn.cursor()
         # adds row of data into table using placeholders
@@ -54,9 +53,17 @@ class NetworkAnalyzer:
         conn.commit()
         conn.close()
 
+        # print metrics (for immediate visual feedback)
         print(f"[NetworkAnalyzer] Operation: {operation} | File: {filename} | Size {file_size_mb:.2f} Mb | Time: {transfer_time_sec:.4f}s | Rate: {data_rate_mbps:.2f} Mb/s")
 
-
+    # gets stored transfer metrics from database for analysis
+    def get_metrics(self):
+        conn = sqlite3.connect(self.db_name)
+        cursor = conn.cursor()
+        cursor.excute('''
+            SELECT * FROM transfer_metrics
+        ''')
+        
 
 
 '''
