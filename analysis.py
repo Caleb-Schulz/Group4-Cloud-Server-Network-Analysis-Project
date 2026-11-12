@@ -60,7 +60,7 @@ class NetworkAnalyzer:
     def get_metrics(self):
         conn = sqlite3.connect(self.db_name)
         cursor = conn.cursor()
-        cursor.excute('''
+        cursor.execute('''
             SELECT * FROM transfer_metrics
         ''')
         rows = cursor.fetchall()
@@ -68,8 +68,32 @@ class NetworkAnalyzer:
         return rows
 
 
+
 '''
-# testing parts 1-3
+# Test
+if __name__ == "__main__":
+    # 1. Initialize the analyzer and database
+    analyzer = NetworkAnalyzer()
+    print("Database and table initialized successfully")
+    
+    # 2. Save a test upload metric
+    analyzer.save_transfer_metrics("UPLOAD", "test_video.mp4", 52428800, 2.5)
+    
+    # 3. Save a test download metric
+    analyzer.save_transfer_metrics("DOWNLOAD", "document.pdf", 10485760, 0.8)
+    
+    # 4. Fetch and print all stored records from database
+    print("\n--- Fetching Stored Metrics ---")
+    records = analyzer.get_metrics()
+    
+    for record in records:
+        print(record)
+'''
+
+
+
+'''
+# Test
 if __name__ == "__main__":
     test_analyzer = NetworkAnalyzer()
     print("success")
