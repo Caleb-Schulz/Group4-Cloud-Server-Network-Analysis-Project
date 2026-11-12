@@ -16,8 +16,6 @@ If you are running this code first time, and you don't have streamlit installed,
 import streamlit as st
 import socket
 import os
-import threading
-import sys
 import hashlib
 
 # ======== CONFIGURATION (Network Connection & Logics) ========
@@ -44,8 +42,8 @@ if "authenticated" not in st.session_state:
 
 # Hashes password for securtiy purposes
 # Takes care of not transmitting the password in clear text
-def hashPassword(password)
-    return hashlib.sha256(password.encode('utf-8').hexdigest()) # hashes the password
+def hashPassword(password):
+    return hashlib.sha256(password.encode('utf-8')).hexdigest() # hashes the password
 
 # Function to be reused for every file operation (command)
 # Network sockets can't take string input, so makes it into bytes and sends
@@ -54,8 +52,8 @@ def hashPassword(password)
 # If connection error occurs, it gets catched through except
 # Updates the status displayed via sidebar
 
-def sendCommand(command)
-   try:
+def sendCommand(command):
+    try:
         st.session_state.sock.sendall(command.encode('utf-8'))
        
         response = st.session_state.sock.recv(BUFFER_SIZE).decode('utf-8')
@@ -69,15 +67,6 @@ def sendCommand(command)
         st.session_state.authenticated = False
         
         return f"ERROR: Connection Lost ({e})"
-
-
-# ======== ESTABLISHING A CONNECTION ========
-
-# working on it 
-
-def send_request():
-    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-       s.connect((host, port))
 
 # ======== STREAMLIT UI ========
 
@@ -103,32 +92,107 @@ else:
 
 
 # -------- CONNECT --------
-if choice == "Connect"
+if choice == "Connect":
 
-# wip ^^'
+    # Login screen to make a connection
+    # Input different fields needed to make the connection
+    # Typed user password is masked with dots for security
+
+    st.header("Connect & Authenricate")
+
+    serverIP = st.text_input("Server IP Address", value=host) # default value for testing
+
+    serverPort = st.number_input("Server Port", value=port) # default value for testing
+
+    username = st.text_input("Username")
+
+    password = st.text_input("Password", type="password")
+
+    # Making two columns to display "Connect" and "Disconnect" for user
+
+    # col1 is for users to connect to the server:
+    # If the user selects the "Connection Login" button,
+    # it uses the previously inputted information
+    # to create a connection with the server with socket
+    # and sets the connection variable to "True"
+    # If it succeeds (known from the response after sending user & pass),
+    # it sets the authentication variables to "True"
+    # If no connection was made, it will send an error message
+    
+
+    # col2 is for users to disconnect from the server
+    # If the user selects the "Disconnect" button,
+    # it closes the connection socket
+    # and sets the connection & authentication variables to "False"
+
+    # Last part to guard the file operations
+    # If connection is not authenticated, user will have to go login
+
+    col1, col2 = st.columns(2)
+
+    with col1:
+        
+        if st.button("Connection Login"):
+            try:
+                
+                s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                s.connect((serverIP, int(serverPort)))
+                st.session_state.sock = s
+                st.session_state.connected = True
+
+                hashed_password = hashPassword(password)
+                authRESP = sendCommand(f"AUTH|{username}|{hashed_password}")
+
+                if "OK" in authRESP or "SUCCESS" in authRESP:
+
+                    st.session_state.authenticated = True
+                    st.success("Connected and Authenticated Successfully.")
+
+                else:
+                    st.error(f"Authentication Failed : {authRESP}")
+            
+            except Exception as e:
+                st.error(f"Failed to Connect: {e}")
+    
+    with col2:
+
+        if st.button("Disconnect"):
+
+            if st.session_state.sock:
+                st.session_state.sock.close()
+
+            st.session_state.sock = None
+            st.session_state.connected = False
+            st.session_state.authenticated = False
+
+            st.info("Disconnrcted From Server.")
+
+elif not st.session_state.authenticated:
+    st.warning("Please go to 'Connection Login' and log into the server first.")
+
 
 # -------- UPLOAD --------
-if choice == "Upload"
+if choice == "Upload":
 
 
 
 # -------- DOWNLOAD --------
-if choice == "Download"
+if choice == "Download":
 
 
 
 # -------- DELETE --------
-if choice == "Delete"
+if choice == "Delete":
 
 
 
 # -------- DIR --------
-if choice == "Dir"
+if choice == "Dir":
 
 
 
 # -------- SUBFOLDER --------
-if choice == "Subfolder"
+if choice == "Subfolder":
 
 
 
