@@ -54,7 +54,7 @@ class NetworkAnalyzer:
         conn.commit()
         conn.close()
 
-        
+        print(f"[NetworkAnalyzer] Operation: {operation} | File: {filename} | Size {file_size_mb:.2f} Mb | Time: {transfer_time_sec:.4f}s | Rate: {data_rate_mbps:.2f} Mb/s")
 
 
 
