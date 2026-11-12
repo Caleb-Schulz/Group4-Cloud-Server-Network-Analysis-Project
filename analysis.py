@@ -46,10 +46,14 @@ class NetworkAnalyzer:
         # connects to database file
         conn = sqlite3.connect(self.db_name)
         cursor = conn.cursor()
+        # adds row of data into table using placeholders
         cursor.execute('''
             INSERT INTO transfer_metrics (operation, filename, file_size_mb, transfer_time_sec, data_rate_mbps)
             VALUES (?, ?, ?, ?, ?)
             ''' (operation, filename, file_size_mb, transfer_time_sec, data_rate_mbps))
+        conn.commit()
+        conn.close()
+
         
 
 
