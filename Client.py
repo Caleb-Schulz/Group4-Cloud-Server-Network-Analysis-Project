@@ -5,13 +5,13 @@ If you are running this code first time, and you don't have streamlit installed,
     pip install streamlit
 '''
 
-# to run type in terminal 'streamlit run app.py'
+# to run type in terminal 'streamlit run Client.py'
 
 # WILL NEED TESTING WHEN THIS PORTION IS DONE:
 
 # On the Google Cloud VM Instance SSH, 
 # 1) First install 'pip install streamlit'
-# 2) Then, 'streamlit run app.py --server.address 0.0.0.0 --server.port 8501'
+# 2) Then, 'streamlit run Client.py --server.address 0.0.0.0 --server.port 8501'
 
 import streamlit as st
 import socket
