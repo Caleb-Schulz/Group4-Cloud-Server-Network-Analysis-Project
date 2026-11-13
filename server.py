@@ -114,9 +114,9 @@ def handle_client(client_socket, address):
                         response = "Upload cancelled by user.\n"
                         client_socket.sendall(response.encode('utf-8'))
                         continue
-                else:
-                    # Tells the client we are ready to receive the file
-                    client_socket.sendall(b"Ready, send file data\n")
+                
+                # Tell the client we are ready to receive the file (runs for both new files and confirmed overwrites)
+                client_socket.sendall(b"Ready, send file data\n")
                 
                 try:
                     # Receive and save the file data
@@ -133,44 +133,7 @@ def handle_client(client_socket, address):
                     client_socket.settimeout(None) 
                     response = f"File '{filename}' uploaded successfully.\n"
                 except Exception as e:
-                    response = f"Error:Failed to save file -> {e}\n"
-
-            elif command == "DOWNLOAD":
-                filename = args.strip()
-                if not filename:
-                    response = "No filename provided.\n"
-                    client_socket.sendall(response.encode('utf-8'))
-                    continue
-                    
-                # Secure path validation
-                file_path = os.path.abspath(os.path.join(STORAGE_DIR, filename))
-                if not file_path.startswith(os.path.abspath(STORAGE_DIR)):
-                    response = "Error: Invalid path outside storage directory.\n"
-                    client_socket.sendall(response.encode('utf-8'))
-                    continue
-                
-                # Check if file exists on the server
-                if not os.path.exists(file_path) or not os.path.isfile(file_path):
-                    response = f"Error: File '{filename}' does not exist.\n"
-                    client_socket.sendall(response.encode('utf-8'))
-                else:
-                    try:
-                        file_size = os.path.getsize(file_path)
-                        # Signal ready and send file size info
-                        client_socket.sendall(f"Sending file ({file_size} bytes)\n".encode('utf-8'))
-                        
-                        # Open and stream the file data in chunks
-                        with open(file_path, 'rb') as f:
-                            while True:
-                                chunk = f.read(BUFFER_SIZE)
-                                if not chunk:
-                                    break
-                                client_socket.sendall(chunk)
-                                
-                        print(f"[{address}] Successfully sent file: {filename}")
-                    except Exception as e:
-                        response = f"Error: Failed to send file -> {e}\n"
-                        client_socket.sendall(response.encode('utf-8'))
+                    response = f"Error: Failed to save file -> {e}\n"
 
             elif command == "DELETE":
                 filename = args.strip()
