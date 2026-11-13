@@ -120,7 +120,7 @@ if choice == "Connect":
     # If no connection was made, it will send an error message
     
 
-    # col2 is for users to disconnect from the server
+    # col2 is for users to disconnect from the server:
     # If the user selects the "Disconnect" button,
     # it closes the connection socket
     # and sets the connection & authentication variables to "False"
@@ -212,7 +212,13 @@ elif choice == "Upload":
     # if the file was uploaded in any of the three formats
     if uploadedFile is not None:
 
+        fileBytes = uploadedFile.getvalue()
+        fileSize = len(fileBytes)
     
+        if st.button("Upload to Server"):
+
+            # code that corresponds to sending commands and recieving responses
+
 
 
 
@@ -220,6 +226,11 @@ elif choice == "Upload":
 elif choice == "Download":
 
     st.header("Download Files")
+
+    filename = st.text_input("Enter the filename to download:")
+
+    if st.button("Request File"):
+
 
 
 # ======== DELETE ========
