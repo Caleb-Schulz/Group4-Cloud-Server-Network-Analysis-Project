@@ -82,7 +82,7 @@ def handle_client(client_socket, address):
             if command == "DIR":
                 try:
                     # Filter out server script, environment files, and hidden files
-                    ignored_files = {"server.py", ".env", "lost+found"}
+                    ignored_files = {"server.py", "analysis.py", ".env", "lost+found"}
                     files = [
                         f for f in os.listdir(STORAGE_DIR) 
                         if f not in ignored_files and not f.startswith(".")
