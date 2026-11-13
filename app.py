@@ -18,13 +18,13 @@ import socket
 import os
 import hashlib
 
-# ======== CONFIGURATION (Network Connection & Logics) ========
+# ============ CONFIGURATION (Network Connection & Logics) ============
 
 host = '0.0.0.0'  # Listens on all network interfaces
 port = 5000       # Project port (The firewall rules have this port open)
 BUFFER_SIZE = 4096
 
-# -------- Session State Check --------
+# ======== Session State Check ========
 
 # Needed to keep session state after every click
 # Otherwise, each click would run the code from top to bottom
@@ -68,7 +68,7 @@ def sendCommand(command):
         
         return f"ERROR: Connection Lost ({e})"
 
-# ======== STREAMLIT UI ========
+# ============ STREAMLIT UI ============
 
 st.title("Cloud Server File Request & Transfer") # Title for the application
 
@@ -91,14 +91,14 @@ else:
     st.sidebar.error("Status: Disconnected")
 
 
-# -------- CONNECT --------
+# ======== CONNECT ========
 if choice == "Connect":
 
     # Login screen to make a connection
     # Input different fields needed to make the connection
     # Typed user password is masked with dots for security
 
-    st.header("Connect & Authenricate")
+    st.header("Connect & Authenticate")
 
     serverIP = st.text_input("Server IP Address", value=host) # default value for testing
 
@@ -124,9 +124,6 @@ if choice == "Connect":
     # If the user selects the "Disconnect" button,
     # it closes the connection socket
     # and sets the connection & authentication variables to "False"
-
-    # Last part to guard the file operations
-    # If connection is not authenticated, user will have to go login
 
     col1, col2 = st.columns(2)
 
@@ -167,33 +164,84 @@ if choice == "Connect":
 
             st.info("Disconnrcted From Server.")
 
+
+# Last part to guard the file operations
+# If connection is not authenticated, user will have to go login
+
 elif not st.session_state.authenticated:
     st.warning("Please go to 'Connection Login' and log into the server first.")
 
 
-# -------- UPLOAD --------
-if choice == "Upload":
+# ======== UPLOAD ========
+elif choice == "Upload":
+
+    st.header("Upload Files")
+
+    # User gets to select the type of file they want to upload
+    # Supports text, audio and video file
+
+    uploadOption = st.radio(
+        "Select File Type", 
+        ["Text", "Audio", "Video"],
+        captions=[
+            "(.txt)"
+            "(.mp3)"
+            "(.mp4)"
+        ],
+
+        index=None,
+    )
+
+    st.write("You Selected:", uploadOption)
+
+    uploadedFile = None
+
+    if uploadOption == "Text":
+
+        # show the upload button for text files
+
+    elif uploadOption == "Audio":
+
+        # show the upload button for audio files
+
+    elif uploadOption == "Video":
+
+        # show the upload button for video files
+
+
+    # if the file was uploaded in any of the three formats
+    if uploadedFile is not None:
+
+    
 
 
 
-# -------- DOWNLOAD --------
-if choice == "Download":
+# ======== DOWNLOAD ========
+elif choice == "Download":
+
+    st.header("Download Files")
+
+
+# ======== DELETE ========
+elif choice == "Delete":
+
+    st.header("Delete Files")
+
+
+    if st.button("Delete File"):
+
+
+# ======== DIR ========
+elif choice == "Dir":
+
+    st.header("View Directory (Files and Subdirectories)")
 
 
 
-# -------- DELETE --------
-if choice == "Delete":
+# ======== SUBFOLDER ========
+elif choice == "Subfolder":
 
-
-
-# -------- DIR --------
-if choice == "Dir":
-
-
-
-# -------- SUBFOLDER --------
-if choice == "Subfolder":
-
+    st.header("Subfolder Creation & Deletion")
 
 
 
