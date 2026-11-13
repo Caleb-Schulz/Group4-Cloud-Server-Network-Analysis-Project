@@ -54,9 +54,9 @@ def hashPassword(password):
 
 def sendCommand(command):
     try:
-        st.session_state.sock.sendall(command.encode('utf-8'))
+        st.session_state.sock.sendall(command + "\n".encode('utf-8'))
        
-        response = st.session_state.sock.recv(BUFFER_SIZE).decode('utf-8')
+        response = st.session_state.sock.recv(BUFFER_SIZE).decode('utf-8').strip()
        
         return response
 
@@ -137,16 +137,21 @@ if choice == "Connect":
                 st.session_state.sock = s
                 st.session_state.connected = True
 
-                hashed_password = hashPassword(password)
-                authRESP = sendCommand(f"AUTH|{username}|{hashed_password}")
+                greeting = s.recv(BUFFER_SIZE).decode('utf-8').strip()
 
-                if "OK" in authRESP or "SUCCESS" in authRESP:
+                hashed_password = hashPassword(password)
+                authRESP = sendCommand(f"{username}:{hashed_password}")
+
+                if "SUCCESS" in authRESP:
 
                     st.session_state.authenticated = True
                     st.success("Connected and Authenticated Successfully.")
 
                 else:
-                    st.error(f"Authentication Failed : {authRESP}")
+                    st.error(f"Authentication Failed: {authRESP}")
+                    s.close()
+                    st.session_state.sock = None
+                    st.session_state.connected = False
             
             except Exception as e:
                 st.error(f"Failed to Connect: {e}")
