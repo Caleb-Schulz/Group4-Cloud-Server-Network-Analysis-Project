@@ -1,3 +1,38 @@
+"""
+To Run Server
+Step 1: Enter directory
+cd /mnt/server_storage
+
+Step 2: Run Sever
+python3 -u server.py
+
+To Run Client (On separate instance)
+Step 1: Enter directory
+cd /mnt/server_storage
+
+Step 2: Run Client
+source venv/bin/activate
+streamlit run Client.py --server.address 0.0.0.0 --server.port 8501
+
+
+To Update Server Files
+Step 1: Enter directory
+cd /mnt/server_storage
+
+Step 2: Check Files
+ls
+
+Step 3: Remove old files
+rm (filename)
+
+Step 4: Upload File
+Use the GUI to upload files
+Ensure your SSH is authenticated
+
+Step 5: Move File
+mv /home/(username)/(filename) /mnt/server_storage/(filename)
+"""
+
 import socket
 import threading
 import sys
