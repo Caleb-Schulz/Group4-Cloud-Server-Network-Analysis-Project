@@ -5,13 +5,13 @@ If you are running this code first time, and you don't have streamlit installed,
     pip install streamlit
 '''
 
-# to run type in terminal 'streamlit run app.py'
+# to run type in terminal 'streamlit run Client.py'
 
 # WILL NEED TESTING WHEN THIS PORTION IS DONE:
 
 # On the Google Cloud VM Instance SSH, 
 # 1) First install 'pip install streamlit'
-# 2) Then, 'streamlit run app.py --server.address 0.0.0.0 --server.port 8501'
+# 2) Then, 'streamlit run Client.py --server.address 0.0.0.0 --server.port 8501'
 
 import streamlit as st
 import socket
@@ -202,15 +202,15 @@ elif choice == "Upload":
     uploadedFile = None
 
     if uploadOption == "Text":
-
+        pass # Temp placeholder
         # show the upload button for text files
 
     elif uploadOption == "Audio":
-
+        pass # Temp placeholder
         # show the upload button for audio files
 
     elif uploadOption == "Video":
-
+        pass # Temp placeholder
         # show the upload button for video files
 
 
@@ -221,7 +221,7 @@ elif choice == "Upload":
         fileSize = len(fileBytes)
     
         if st.button("Upload to Server"):
-
+            pass  # Temp placeholder
             # code that corresponds to sending commands and receiving responses
             # Option to overwrite the current file should be implemeneted as well
             # If the file already exists
@@ -235,7 +235,7 @@ elif choice == "Download":
     filename = st.text_input("Enter the filename to download:")
 
     if st.button("Request File"):
-
+        pass  # Temp placeholder
         # code that corresponds to sending commands and receiving responses
 
 
@@ -247,7 +247,7 @@ elif choice == "Delete":
 
 
     if st.button("Delete File"):
-
+        pass  # Temp placeholder
         # code that corresponds to sending commands and receiving responses
 
 
@@ -257,7 +257,7 @@ elif choice == "Dir":
     st.header("View Directory (Files and Subdirectories)")
 
     if st.button("Refresh Directory"):
-
+        pass  # Temp placeholder
         # code that corresponds to sending commands and receiving responses
 
 # ======== SUBFOLDER ========
@@ -281,6 +281,6 @@ elif choice == "Subfolder":
     folderPath = st.text_input("Subfolder Path/Name")
 
     if st.button("Submit"):
-
+        pass  # Temp placeholder
         # code that corresponds to sending commands and receiving responses
 
