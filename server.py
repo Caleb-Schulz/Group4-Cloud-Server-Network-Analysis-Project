@@ -3,6 +3,10 @@ import threading
 import sys
 import os
 import hashlib
+from analysis import NetworkAnalyzer
+
+# Initialize the analyzer
+metrics_analyzer = NetworkAnalyzer()
 
 # Server Configuration
 HOST = '0.0.0.0'  # Listens on all network interfaces
@@ -119,6 +123,9 @@ def handle_client(client_socket, address):
                 client_socket.sendall(b"Ready, send file data\n")
                 
                 try:
+                    import time
+                    start_time = time.time() # Start the stopwatch
+                    
                     # Receive and save the file data
                     with open(file_path, 'wb') as f:
                         client_socket.settimeout(2.0) 
@@ -131,14 +138,22 @@ def handle_client(client_socket, address):
                             except socket.timeout:
                                 break
                     client_socket.settimeout(None) 
+                    
+                    end_time = time.time() # Stop the stopwatch
+                    transfer_time = end_time - start_time # Calculate duration
+                    
                     response = f"File '{filename}' uploaded successfully.\n"
+
+                    # measure upload
+                    file_size_bytes = os.path.getsize(file_path)
+                    metrics_analyzer.save_transfer_metrics("UPLOAD", filename, file_size_bytes, transfer_time)
                 except Exception as e:
                     response = f"Error: Failed to save file -> {e}\n"
 
-            elif command == "DELETE":
+            elif command == "DOWNLOAD":
                 filename = args.strip()
                 if not filename:
-                    response = "Error: No filename provided.\n"
+                    response = "No filename provided.\n"
                     client_socket.sendall(response.encode('utf-8'))
                     continue
                     
@@ -149,19 +164,37 @@ def handle_client(client_socket, address):
                     client_socket.sendall(response.encode('utf-8'))
                     continue
                 
-                # Check if file exists
+                # Check if file exists on the server
                 if not os.path.exists(file_path) or not os.path.isfile(file_path):
                     response = f"Error: File '{filename}' does not exist.\n"
+                    client_socket.sendall(response.encode('utf-8'))
                 else:
                     try:
-                        # Try to delete the file
-                        os.remove(file_path)
-                        response = f"File '{filename}' deleted successfully.\n"
-                        print(f"[{address}] Successfully deleted file: {filename}")
-                    except PermissionError:
-                        response = f"Error: File '{filename}' is currently being processed or locked.\n"
+                        file_size = os.path.getsize(file_path)
+                        # Signal ready and send file size info
+                        client_socket.sendall(f"Sending file ({file_size} bytes)\n".encode('utf-8'))
+                        
+                        import time
+                        start_time = time.time()  # Start the download stopwatch
+                        
+                        # Open and stream the file data in chunks
+                        with open(file_path, 'rb') as f:
+                            while True:
+                                chunk = f.read(BUFFER_SIZE)
+                                if not chunk:
+                                    break
+                                client_socket.sendall(chunk)
+                                
+                        end_time = time.time()       # Stop the stopwatch
+                        transfer_time = end_time - start_time  # Calculate duration
+                        
+                        print(f"[{address}] Successfully sent file: {filename}")
+                        
+                        # Measure download metrics using your teammate's analyzer
+                        metrics_analyzer.save_transfer_metrics("DOWNLOAD", filename, file_size, transfer_time)
                     except Exception as e:
-                        response = f"Error: Failed to delete file -> {e}\n"
+                        response = f"Error: Failed to send file -> {e}\n"
+                        client_socket.sendall(response.encode('utf-8'))
 
             elif command == "SUBFOLDER":
                 sub_parts = args.split(' ', 1)
