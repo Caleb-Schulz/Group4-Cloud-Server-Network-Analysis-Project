@@ -20,7 +20,7 @@ import hashlib
 
 # ============ CONFIGURATION (Network Connection & Logics) ============
 
-host = '0.0.0.0'  # Listens on all network interfaces
+host = '136.115.113.19'  # Set to the Static GCP public IP address
 port = 5000       # Project port (The firewall rules have this port open)
 BUFFER_SIZE = 4096
 
@@ -54,7 +54,7 @@ def hashPassword(password):
 
 def sendCommand(command):
     try:
-        st.session_state.sock.sendall(command + "\n".encode('utf-8'))
+        st.session_state.sock.sendall((command + "\n").encode('utf-8'))
        
         response = st.session_state.sock.recv(BUFFER_SIZE).decode('utf-8').strip()
        
