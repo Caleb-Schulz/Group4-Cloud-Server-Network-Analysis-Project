@@ -184,9 +184,9 @@ elif choice == "Upload":
         "Select File Type", 
         ["Text", "Audio", "Video"],
         captions=[
-            "(.txt)"
-            "(.mp3)"
-            "(.mp4)"
+            "(.txt)",
+            "(.mp3)",
+            "(.mp4)",
         ],
 
         index=None,
@@ -217,9 +217,9 @@ elif choice == "Upload":
     
         if st.button("Upload to Server"):
 
-            # code that corresponds to sending commands and recieving responses
-
-
+            # code that corresponds to sending commands and receiving responses
+            # Option to overwrite the current file should be implemeneted as well
+            # If the file already exists
 
 
 # ======== DOWNLOAD ========
@@ -231,6 +231,8 @@ elif choice == "Download":
 
     if st.button("Request File"):
 
+        # code that corresponds to sending commands and receiving responses
+
 
 
 # ======== DELETE ========
@@ -241,18 +243,39 @@ elif choice == "Delete":
 
     if st.button("Delete File"):
 
+        # code that corresponds to sending commands and receiving responses
+
 
 # ======== DIR ========
 elif choice == "Dir":
 
     st.header("View Directory (Files and Subdirectories)")
 
+    if st.button("Refresh Directory"):
 
+        # code that corresponds to sending commands and receiving responses
 
 # ======== SUBFOLDER ========
 elif choice == "Subfolder":
 
     st.header("Subfolder Creation & Deletion")
 
+    action = st.radio(
+        "Select Action for Subfolder", 
+        ["Create", "Delete"],
+        captions=[
+            "(Creates subfolder in the server's file storage path)",
+            "(Deletes subfolder in the server's file storage path)",
+        ],
 
+        index=None,
+    )
+
+    st.write("You Selected:", action)
+
+    folderPath = st.text_input("Subfolder Path/Name")
+
+    if st.button("Submit"):
+
+        # code that corresponds to sending commands and receiving responses
 
