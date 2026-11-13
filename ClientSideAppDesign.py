@@ -34,7 +34,7 @@ import requests
 
 #delete existing subfolder: [12== delete existing subfolder]
 
-
+"""
 print("Choose a file operation you want to perform\n")
 
 print("Enter 1 for Upload Text File")
@@ -59,26 +59,31 @@ if file_operation > 12 or file_operation < 1:
     print("Invalid file operation. Please re-enter a valid number choice:\n")
     file_operation=int(input("Enter a choice "))
 
-
 if file_operation == 1:
-    upload_file = st.file_uploader("Choose a file: ", type=txt, max_upload_size=100000)
+"""
+# You Should use the stream lit build in features to make the GUI instead of text menu system
 
-    if upload_file is not None:
-        #First convert the file into bytes so that the computer can read it
-        byte_data = upload_file.getvalue()
+st.header("Upload Text File")
 
-    #Next, process the uploaded file:
-        #note: was upload_file.name.endswith(".txt")
-        try:
-            if upload_file.endswith(".txt"):
-                st.success(f"TXT file '{upload_file}' uploaded successfully!")
+# type should be a list of strings, and removed invalid max_upload_size parameter
+upload_file = st.file_uploader("Choose a file:", type=["txt"])
 
-            else:
-                st.error("Unsupported file type.")
-        
-        except Exception as e:
-            st.error(f"Error reading file:" {e})
+if upload_file is not None:
+    # First convert the file into bytes so that the computer can read it
+    byte_data = upload_file.getvalue()
+
+    # Next, process the uploaded file:
+    try:
+        # check upload_file.name
+        if upload_file.name.endswith(".txt"):
+            st.success(f"TXT file '{upload_file.name}' uploaded successfully!")
+            
+            # Here is where you would call their socket send logic
+        else:
+            st.error("Unsupported file type.")
     
-    else:
-        st.info("Please upload a file to proceed.")
+    except Exception as e:
+        st.error(f"Error reading file: {e}")
 
+else:
+    st.info("Please upload a file to proceed.")
