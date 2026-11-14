@@ -4,6 +4,22 @@ If you are running this code first time, and you don't have streamlit installed,
 2. enter this command
     pip install streamlit
 '''
+# =================================================================================================
+
+# Note: Savitri and Kamini worked on this together.
+
+# Anything that Kamini implemented & commented will be labeled with their name.
+# If there is no name, those are Savitri's implementations & comments.
+
+# Savitri worked with implementing & making the streamlit UI,
+# along with establishing the connection & authentication process, all of the "CONNECT" operation
+# and additional functions, such as the sendCommand
+
+# Kamini worked on implementing the inner operational logics of the different operations
+# "UPLOAD", "DOWNLOAD", "DELETE", "DIR", "SUBFOLDER"
+
+# =================================================================================================
+
 
 # to run type in terminal 'streamlit run Client.py'
 
@@ -199,45 +215,62 @@ elif choice == "Upload":
 
     st.write("You Selected:", uploadOption)
 
-    uploadedFile = None
+    filename = None
+
+    # Upload type chosen based on user's answer
 
     if uploadOption == "Text":
-        pass # Temp placeholder
-        # show the upload button for text files
+        
+        # Kamini - show the upload button for text files
+        filename = st.file_uploader("Choose a file: ", type="txt", max_upload_size=100000)
 
     elif uploadOption == "Audio":
-        pass # Temp placeholder
-        # show the upload button for audio files
+
+        # Kamini - show the upload button for audio files
+        filename = st.file_uploader("Choose a file: ", type="mp3", max_upload_size=100000)
 
     elif uploadOption == "Video":
-        pass # Temp placeholder
-        # show the upload button for video files
+
+        # Kamini - show the upload button for video files
+        filename = st.file_uploader("Choose a file: ", type="mp4", max_upload_size=100000)
 
 
-    # if the file was uploaded in any of the three formats
-    if uploadedFile is not None:
+    # Kamini - if the file was uploaded in any of the three formats
+    if filename is not None:
 
-        fileBytes = uploadedFile.getvalue()
-        fileSize = len(fileBytes)
+        # Kamini - First convert the file into bytes so that the computer can read it
+        byte_data = filename.getvalue()
     
         if st.button("Upload to Server"):
-            pass  # Temp placeholder
-            # code that corresponds to sending commands and receiving responses
+          
+            try: 
+                # code that corresponds to sending commands and receiving responses
+               
+                # Kamini - Next, process the uploaded file:
+                # Kamini - uploadRESP is the variable which holds the result of the server's response to the UPLOAD command
+                uploadRESP = sendCommand(f"UPLOAD {filename.name}")
 
+                # Kamini -check for filename provided:
+                if "Error: No filename provided" in uploadRESP:  
+                    st.error("Please provide a filename.")
 
-            # Server responds with "already exists"
-            # So user needs to be asked wheter to overwrite next
-            if "already exists" in response:
-                st.session_state.ask_overwrite = True
+                # Server responds with "already exists"
+                # So user needs to be asked wheter to overwrite next
+                elif "File already exists" in uploadRESP:
+                    st.session_state.ask_overwrite = True
 
-            
-            # Logic for recieving "Ready" in the response
-            elif "Ready" in response:
-                # logic needed here
+                # Kamini - if file does not exist, we can readily upload it:
+                elif "Ready, send file data" in uploadRESP:
+                    st.session_state.sock.sendall(byte_data)
+                    st.success("File Uploaded Successfully!")
 
-            # Logic for any other response (Such as error)
-            else:
-                
+                # If any other error occur
+                else:
+                    st.error(uploadRESP)
+
+            except Exception as e:
+            st.error(f"Error reading file: {e}")
+
 
         # Option to overwrite the current file should be implemeneted
         # If the file already exists
@@ -249,12 +282,29 @@ elif choice == "Upload":
                     index=None,
             )
 
+            # Kamini - if client selects 'y', server response is ready, send file data
             if overwrite == "Yes":
-                # logic to send 'y' to server
-                
-            elif overwrite == "No"
-                # logic to send 'n' to server
+                # Kamini - logic to send 'y' to server
+                st.session_state.sock.sendall("y")
 
+                st.session_state.sock.sendall(byte_data)
+                st.success("File Uploaded Successfully!")
+                
+
+            # Kamini - if client selects 'n', server response is upload cancelled by user, and overwrite was cancelled:
+            elif overwrite == "No":
+                # Kamini - logic to send 'n' to server
+                st.session_state.sock.sendall("n")
+                response = st.session_state.sock.recv(BUFFER_SIZE).decode('utf-8') # Kamini - client receives the response from the server
+
+                if "Upload cancelled by user" in response:
+                    st.error("Upload Overwrite Cancelled.")
+                
+                st.session_state.ask_overwrite = False
+
+
+    else:
+        st.info("Please upload a file to proceed.")
 
 # ======== DOWNLOAD ========
 elif choice == "Download":
