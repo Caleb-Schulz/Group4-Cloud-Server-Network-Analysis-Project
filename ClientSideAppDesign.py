@@ -1,6 +1,4 @@
 import streamlit as st
-import pandas as pd 
-from io import StringIO
 import socket
 import os 
 import requests
@@ -9,10 +7,9 @@ import requests
 #handle file upload, download, directory operations
 #provide feedback to user based on status of file transfer and operations
 #file operations: connect server IP port (initiates connection from client to server with 
-#SPECIFIED FILES) [needs authentication], Upload[filename], download[filename], 
-#delete a file, dir, view list of files and subdirectories in server file storage path
-#subfolder, (create/delete) path/directory, clients can create or delete subfolders
-#in server's file storage path
+#SPECIFIED FILES) [needs authentication]
+#file operations (my end): Upload[filename], download[filename], delete [filename], view dir [list of files & subdir in server file storage path]
+#create/delete subfolders
 
 #how to compile: python -m py_compile [filename.py]
 #how to run: python3 [filename].py
@@ -26,13 +23,13 @@ import requests
 
 #Download: [4==Text, 5==Audio, 6==Video]
 
-#delete: [7==Text, 8==Audio, 9==Video]
+#Delete: [7==Text, 8==Audio, 9==Video]
 
 #view directory: [10==view directory]
 
-#create new subfolder: [11== create new subfolder]
+#Create new subfolder: [11== create new subfolder]
 
-#delete existing subfolder: [12== delete existing subfolder]
+#Delete existing subfolder: [12== delete existing subfolder]
 
 
 print("Choose a file operation you want to perform\n")
@@ -53,29 +50,53 @@ print("Enter 12 to Delete an Existing Subfolder")
 file_operation=int(input("Enter a choice: "))
 
 
-#if statement: file operation number invalid print a statement
-#make user re-enter it again
+#if statement: file operation number invalid, make user re-enter file_operation choice again
 if file_operation > 12 or file_operation < 1:
-    print("Invalid file operation. Please re-enter a valid number choice:\n")
-    file_operation=int(input("Enter a choice "))
+
+    while file_operation > 12 or file_operation < 1:
+        print("\nInvalid file operation. Please re-enter a valid number choice:")
+        file_operation=int(input("Enter a choice "))
 
 
+
+#[OPTION 1 UPLOAD TEXT FILE]:
 if file_operation == 1:
-    upload_file = st.file_uploader("Choose a file: ", type=txt, max_upload_size=100000)
+    filename = st.file_uploader("Choose a file: ", type=txt, max_upload_size=100000)
 
-    if upload_file is not None:
-        #First convert the file into bytes so that the computer can read it
+    #First convert the file into bytes so that the computer can read it
+    if filename is not None:
         byte_data = upload_file.getvalue()
 
-    #Next, process the uploaded file:
-        #note: was upload_file.name.endswith(".txt")
+        #Next, process the uploaded file:
         try:
-            if upload_file.endswith(".txt"):
-                st.success(f"TXT file '{upload_file}' uploaded successfully!")
+            #uploadRESP is the variable which holds the result of the server's response to the UPLOAD command
+            uploadRESP = sendCommand(f"UPLOAD_RESPONSE: {filename}")
 
-            else:
-                st.error("Unsupported file type.")
-        
+            #check for filename provided:
+            if "Error: No filename provided" in uploadRESP:  
+                st.error("Please provide a filename.")
+
+            #check if file already exists:
+            elif "File already exists" in uploadRESP:
+                print("Do you want to Overwrite this file? Y/N?")
+                choice=input("Y/N?")                                #create choice variable for client
+                st.session_state.sock.sendall(choice)               #client sends the choice to the server
+                
+                #if client selects 'N', server response is upload cancelled by user, and overwrite was cancelled:
+                response = st.session_state.sock.recv(BUFFER_SIZE).decode('utf-8') #client receives the response from the server
+                if "Upload cancelled by user" in response:
+                    st.error("Upload Overwrite Cancelled.")
+                
+                else: #if client selects 'Y', server response is ready, send file data:
+                    st.session_state.sock.sendall(byte_data)
+                    st.success("File Uploaded Successfully!")
+
+            #if file does not exist, we can readily upload it:
+            elif "Ready, send file data" in uploadRESP:
+                st.session_state.sock.sendall(byte_data)
+                st.success("File Uploaded Successfully!")
+
+
         except Exception as e:
             st.error(f"Error reading file:" {e})
     
