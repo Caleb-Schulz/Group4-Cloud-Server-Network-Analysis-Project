@@ -223,8 +223,37 @@ elif choice == "Upload":
         if st.button("Upload to Server"):
             pass  # Temp placeholder
             # code that corresponds to sending commands and receiving responses
-            # Option to overwrite the current file should be implemeneted as well
-            # If the file already exists
+
+
+            # Server responds with "already exists"
+            # So user needs to be asked wheter to overwrite next
+            if "already exists" in response:
+                st.session_state.ask_overwrite = True
+
+            
+            # Logic for recieving "Ready" in the response
+            elif "Ready" in response:
+                # logic needed here
+
+            # Logic for any other response (Such as error)
+            else:
+                
+
+        # Option to overwrite the current file should be implemeneted
+        # If the file already exists
+        if st.session_state.get("ask_overwrite"):
+            
+            overwrite = st.radio(
+                "Overwrite existing file?", 
+                    ["Yes", "No"],
+                    index=None,
+            )
+
+            if overwrite == "Yes":
+                # logic to send 'y' to server
+                
+            elif overwrite == "No"
+                # logic to send 'n' to server
 
 
 # ======== DOWNLOAD ========
@@ -267,7 +296,7 @@ elif choice == "Subfolder":
 
     action = st.radio(
         "Select Action for Subfolder", 
-        ["Create", "Delete"],
+        ["create", "delete"],
         captions=[
             "(Creates subfolder in the server's file storage path)",
             "(Deletes subfolder in the server's file storage path)",
