@@ -62,6 +62,8 @@ if os.path.exists(env_path):
                 key, val = line.strip().split("=", 1)
                 os.environ[key.strip()] = val.strip()
 
+ignored_files = {"server.py", "analysis.py", "Client.py", ".env", "lost+found"}
+
 def authenticate_client(auth_data):
     # Fetch credentials from .env
     EXPECTED_USER = os.getenv("SERVER_USER")
@@ -117,7 +119,6 @@ def handle_client(client_socket, address):
             if command == "DIR":
                 try:
                     # Filter out server script, environment files, and hidden files
-                    ignored_files = {"server.py", "analysis.py", "Client.py", ".env", "lost+found"}
                     files = [
                         f for f in os.listdir(STORAGE_DIR) 
                         if f not in ignored_files and not f.startswith(".")
@@ -265,6 +266,36 @@ def handle_client(client_socket, address):
                             response = f"Error: Failed to delete subfolder -> {e}\n"
                     else:
                         response = f"Error: Unknown subfolder action '{action}'. Use 'create' or 'delete'.\n"
+
+            elif command == "DELETE":
+                filename = args.strip()
+                if not filename:
+                    response = "Error: No filename provided.\n"
+                    client_socket.sendall(response.encode('utf-8'))
+                    continue
+                    
+                # Secure path validation (prevents directory traversal)
+                file_path = os.path.abspath(os.path.join(STORAGE_DIR, filename))
+                if not file_path.startswith(os.path.abspath(STORAGE_DIR)):
+                    response = "Error: Invalid path outside storage directory.\n"
+                    client_socket.sendall(response.encode('utf-8'))
+                    continue
+                
+                # Protect core server files from accidental deletion
+                if os.path.basename(file_path) in ignored_files:
+                    response = f"Error: Permission denied. Cannot delete '{filename}'.\n"
+                    client_socket.sendall(response.encode('utf-8'))
+                    continue
+
+                try:
+                    if os.path.exists(file_path) and os.path.isfile(file_path):
+                        os.remove(file_path)
+                        response = f"File '{filename}' deleted successfully.\n"
+                        print(f"[{address}] Successfully deleted file: {filename}")
+                    else:
+                        response = f"Error: File '{filename}' does not exist.\n"
+                except Exception as e:
+                    response = f"Error: Failed to delete file -> {e}\n"
 
             else: # Gracefully handle errors
                 response = f"ERROR: Unknown command '{command}'\n"
