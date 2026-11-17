@@ -34,14 +34,14 @@ import requests
 
 print("Choose a file operation you want to perform\n")
 
-print("Enter 1 for Upload Text File")
-print("Enter 2 for Upload Audio File")
-print("Enter 3 for Upload Video File")
-print("Enter 4 for Download Text File")
+print("Enter 1 for Upload Text File") #done
+print("Enter 2 for Upload Audio File") #done
+print("Enter 3 for Upload Video File") #done
+print("Enter 4 for Download Text File") #done
 print("Enter 5 for Delete Text File")
 print("Enter 6 for Delete Audio File")
 print("Enter 7 for Delete Video File")
-print("Enter 8 to View Directory")
+print("Enter 8 to View Directory") #done
 print("Enter 9 to Create a New Subfolder")
 print("Enter 10 to Delete an Existing Subfolder")
 
@@ -236,4 +236,33 @@ if file_operation == 4:
 
 #======================================[OPTION 5 DELETE TEXT FILE]=====================================================
 if file_operation == 5:
-    #need to implement this now
+    #need to implement this, along with deleting audio and video files (this is for text files)
+#=---------------------------------------------------------------------------------------------------------------------
+
+
+
+#=====================================[OPTION 8 VIEW DIRECTORY]========================================================
+if file_operation == 8:
+
+    dirRESP = sendCommand(f"DIR")
+
+    #this is for the exception case, addressing this first:
+    if "Could not list directory" in dirRESP:
+        st.error("Could not view Directory")
+    
+    else:
+        st.info(dirRESP) #this is supposed to show response string text as a result of viewing directory 
+
+
+
+
+#========================================[OPTION 9 CREATE SUBFOLDER]=====================================================
+if file_operation == 9:
+    #need to implement this 
+#-----------------------------------------------------------------------------------------------------------------------
+
+
+#========================================[OPTION 10: DELETE SUBFOLDER]===================================================
+if file_operation == 10:
+    #need to implement this
+#------------------------------------------------------------------------------------------------------------------------
