@@ -21,15 +21,15 @@ import requests
 
 #Upload: [1==Text, 2==Audio, 3==Video]
 
-#Download: [4==Text, 5==Audio, 6==Video]
+#Download: [4==Text,Audio,Video]
 
-#Delete: [7==Text, 8==Audio, 9==Video]
+#Delete: [5==Text, 6==Audio, 7==Video]
 
-#view directory: [10==view directory]
+#view directory: [8==view directory]
 
-#Create new subfolder: [11== create new subfolder]
+#Create new subfolder: [9== create new subfolder]
 
-#Delete existing subfolder: [12== delete existing subfolder]
+#Delete existing subfolder: [10== delete existing subfolder]
 
 
 print("Choose a file operation you want to perform\n")
@@ -38,14 +38,12 @@ print("Enter 1 for Upload Text File")
 print("Enter 2 for Upload Audio File")
 print("Enter 3 for Upload Video File")
 print("Enter 4 for Download Text File")
-print("Enter 5 for Download Audio File")
-print("Enter 6 for Download Video File")
-print("Enter 7 for Delete Text File")
-print("Enter 8 for Delete Audio File")
-print("Enter 9 for Delete Video File")
-print("Enter 10 to View Directory")
-print("Enter 11 to Create a New Subfolder")
-print("Enter 12 to Delete an Existing Subfolder")
+print("Enter 5 for Delete Text File")
+print("Enter 6 for Delete Audio File")
+print("Enter 7 for Delete Video File")
+print("Enter 8 to View Directory")
+print("Enter 9 to Create a New Subfolder")
+print("Enter 10 to Delete an Existing Subfolder")
 
 file_operation=int(input("Enter a choice: "))
 
@@ -161,12 +159,12 @@ if file_operation == 3:
 
     #First convert the file into bytes so that the computer can read it
     if filename is not None:
-        byte_data = upload_file.getvalue()
+        byte_data = filename.getvalue()
 
         #Next, process the uploaded file:
         try:
             #uploadRESP is the variable which holds the result of the server's response to the UPLOAD command
-            uploadRESP = sendCommand(f"UPLOAD_RESPONSE: {filename}")
+            uploadRESP = sendCommand(f"UPLOAD {filename}")
 
             #check for filename provided:
             if "Error: No filename provided" in uploadRESP:  
@@ -199,3 +197,43 @@ if file_operation == 3:
     else:
         st.info("Please upload a file to proceed.") 
 
+#=================================================[OPTION 4 DOWNLOAD FILE]==============================================
+if file_operation == 4:
+    filename = input("Choose a file: ")
+
+    #check if the filename was provided first
+    while filename is None:
+        filename = input("Invalid. Please choose a file: ")
+
+
+    #send over the file to the server:
+    #downloadRSP = variable to hold server's response to download function:
+    downloadRSP = sendCommand(f"DOWNLOAD {filename}")
+
+    #check if filename is provided:
+    if "No filename provided" in downloadRSP:
+      st.error("Please provide a filename.")
+
+    #check if the file exists:
+    elif "does not exist" in downloadRSP:
+        st.error("The filename does not exist.")
+
+    #signal and send file size information:
+    elif "Sending file" in downloadRSP:
+        receivedChunks = b'' #create an empty bytes literal to store bytes in it
+
+        while True:
+            receivedChunks += st.session_state.sock.recv(BUFFER_SIZE) 
+            #this keeps adding on the chunks of data from the file we want to download
+            #because we need to send the file in chunks, 
+            #depending on the size of how many bytes we are allowed to send, based on BUFFER_SIZE
+
+        st.success("The file was successfully received to me!")
+
+        st.download_button("Download file, save to computer", data=receivedChunks, file_name=filename)
+
+
+
+#======================================[OPTION 5 DELETE TEXT FILE]=====================================================
+if file_operation == 5:
+    #need to implement this now
