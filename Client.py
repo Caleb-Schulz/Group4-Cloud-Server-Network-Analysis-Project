@@ -244,8 +244,6 @@ elif choice == "Upload":
         if st.button("Upload to Server"):
           
             try: 
-                # code that corresponds to sending commands and receiving responses
-               
                 # Kamini - Next, process the uploaded file:
                 # Kamini - uploadRESP is the variable which holds the result of the server's response to the UPLOAD command
                 uploadRESP = sendCommand(f"UPLOAD {filename.name}")
@@ -311,13 +309,38 @@ elif choice == "Download":
 
     st.header("Download Files")
 
-    filename = st.text_input("Enter the filename to download:")
+    filename = st.text_input("Enter the file to download:")
 
     if st.button("Request File"):
-        pass  # Temp placeholder
-        # code that corresponds to sending commands and receiving responses
+        # Kamini - send over the file to the server:
+        # Kamini - downloadRSP = variable to hold server's response to download function:
+        downloadRSP = sendCommand(f"DOWNLOAD {filename}")
 
+        # Kamini - check if filename is provided:
+        if "No filename provided" in downloadRSP:
+            st.error("Please provide a filename.")
 
+        # Kamini - check if the file exists:
+        elif "does not exist" in downloadRSP:
+            st.error("The filename does not exist.")
+
+        # Kamini - signal and send file size information:
+        elif "Sending file" in downloadRSP:
+            receivedChunks = b'' # Kamini - create an empty bytes literal to store bytes in it
+
+            while True:
+                receivedChunks += st.session_state.sock.recv(BUFFER_SIZE) 
+                # Kamini - this keeps adding on the chunks of data from the file we want to download
+                # Kamini - because we need to send the file in chunks, 
+                # Kamini - depending on the size of how many bytes we are allowed to send, based on BUFFER_SIZE
+
+            st.success("The file was successfully received to me!")
+
+            st.download_button("Download file, save to computer", data=receivedChunks, file_name=filename)
+        
+        else:
+            # Catch any other possible error responses
+            st.error(downloadRSP)
 
 # ======== DELETE ========
 elif choice == "Delete":
