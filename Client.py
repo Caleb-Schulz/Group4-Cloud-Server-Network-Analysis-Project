@@ -359,8 +359,17 @@ elif choice == "Dir":
     st.header("View Directory (Files and Subdirectories)")
 
     if st.button("Refresh Directory"):
-        pass  # Temp placeholder
-        # code that corresponds to sending commands and receiving responses
+        
+        # Kamini
+        dirRESP = sendCommand(f"DIR")
+
+        # Kamini - this is for the exception case, addressing this first:
+        if "Could not list directory" in dirRESP:
+            st.error("Could not view Directory")
+
+        else:
+            st.info(dirRESP) # Kamini - this is supposed to show response string text as a result of viewing directory 
+
 
 # ======== SUBFOLDER ========
 elif choice == "Subfolder":
