@@ -27,9 +27,7 @@ import requests
 
 #view directory: [8==view directory]
 
-#Create new subfolder: [9== create new subfolder]
-
-#Delete existing subfolder: [10== delete existing subfolder]
+#Subfolder: [9 == Subfolder]
 
 
 print("Choose a file operation you want to perform\n")
@@ -38,18 +36,17 @@ print("Enter 1 for Upload Text File") #done
 print("Enter 2 for Upload Audio File") #done
 print("Enter 3 for Upload Video File") #done
 print("Enter 4 for Download Text File") #done
-print("Enter 5 for Delete Text File")
-print("Enter 6 for Delete Audio File")
-print("Enter 7 for Delete Video File")
+print("Enter 5 for Delete Text File") #done
+#print("Enter 6 for Delete Audio File")
+#print("Enter 7 for Delete Video File")
 print("Enter 8 to View Directory") #done
-print("Enter 9 to Create a New Subfolder")
-print("Enter 10 to Delete an Existing Subfolder")
+print("Enter 9 for Subfolder") #done
 
 file_operation=int(input("Enter a choice: "))
 
 
 #if statement: file operation number invalid, make user re-enter file_operation choice again
-if file_operation > 12 or file_operation < 1:
+if file_operation > 9 or file_operation < 1:
 
     while file_operation > 12 or file_operation < 1:
         print("\nInvalid file operation. Please re-enter a valid number choice:")
@@ -234,9 +231,31 @@ if file_operation == 4:
 
 
 
-#======================================[OPTION 5 DELETE TEXT FILE]=====================================================
+#======================================[OPTION 5 DELETE A FILE]=====================================================
 if file_operation == 5:
     #need to implement this, along with deleting audio and video files (this is for text files)
+    
+    filename = input("Choose a file: ")
+
+
+    deleteRSP = sendCommand(f"DELETE {filename}")
+    
+    #check if filename provided:
+    if "Error: No filename provided" in deleteRSP:
+        st.error("Please provide a filename")
+
+    #check if the filename is in the ignored files (this is to protect core server files from deletion):
+    elif "Permission denied" in deleteRSP:
+        st.error("File cannot be deleted.")
+
+    #successful file deletion:
+    elif "deleted successfully" in deleteRSP:
+        st.success("File deleted successfully")
+
+    #unsuccessful file deletion:
+    elif "does not exist" in deleteRSP:
+        st.error("File does not exist. Failed to delete file.")
+
 #=---------------------------------------------------------------------------------------------------------------------
 
 
@@ -256,13 +275,6 @@ if file_operation == 8:
 
 
 
-#========================================[OPTION 9 CREATE SUBFOLDER]=====================================================
+#========================================[OPTION 9 SUBFOLDER]=====================================================
 if file_operation == 9:
-    #need to implement this 
-#-----------------------------------------------------------------------------------------------------------------------
-
-
-#========================================[OPTION 10: DELETE SUBFOLDER]===================================================
-if file_operation == 10:
-    #need to implement this
-#------------------------------------------------------------------------------------------------------------------------
+    #need to implement this one now
