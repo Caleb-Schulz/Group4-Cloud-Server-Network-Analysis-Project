@@ -204,6 +204,7 @@ def handle_client(client_socket, address):
                 if not os.path.exists(file_path) or not os.path.isfile(file_path):
                     response = f"Error: File '{filename}' does not exist.\n"
                     client_socket.sendall(response.encode('utf-8'))
+                    continue
                 else:
                     try:
                         file_size = os.path.getsize(file_path)
