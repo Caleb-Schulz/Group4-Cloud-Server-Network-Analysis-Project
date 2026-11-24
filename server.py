@@ -1,17 +1,12 @@
 """
 To Run Server
-Step 1: Enter directory
 cd /mnt/server_storage
-
-Step 2: Run Sever
 python3 -u server.py
 
 To Run Client (On separate instance)
-Step 1: Enter directory
 cd /mnt/server_storage
-
-Step 2: Run Client
 source venv/bin/activate
+export TMPDIR=/mnt/server_storage/tmp
 streamlit run Client.py --server.address 0.0.0.0 --server.port 8501 --server.maxUploadSize 2500
 
 
