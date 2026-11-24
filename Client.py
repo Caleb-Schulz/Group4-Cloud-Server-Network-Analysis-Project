@@ -324,9 +324,19 @@ elif choice == "Download":
     filename = st.text_input("Enter the file to download:")
 
     if st.button("Request File"):
-        # Kamini - send over the file to the server:
-        # Kamini - downloadRSP = variable to hold server's response to download function:
-        downloadRSP = sendCommand(f"DOWNLOAD {filename}")
+        try:
+            # Send command directly 
+            st.session_state.sock.sendall(f"DOWNLOAD {filename}\n".encode('utf-8'))
+
+            # Read ONLY until the first newline '\n' so binary file bytes aren't decoded as UTF-8
+            header_bytes = b""
+            while not header_bytes.endswith(b"\n"):
+                byte = st.session_state.sock.recv(1)
+                if not byte:
+                    break
+                header_bytes += byte
+
+            downloadRSP = header_bytes.decode('utf-8').strip()
 
         # Kamini - check if filename is provided:
         if "No filename provided" in downloadRSP:
@@ -339,21 +349,26 @@ elif choice == "Download":
         # Kamini - signal and send file size information:
         elif "Sending file" in downloadRSP:
             expected_size = int(downloadRSP.split("(")[1].split(" ")[0])
-            receivedChunks = b'' # Kamini - create an empty bytes literal to store bytes in it
+            received_buffer = bytearray()
+            progress_bar = st.progress(0)
 
             while len(receivedChunks) < expected_size:
-                chunk = st.session_state.sock.recv(min(BUFFER_SIZE, expected_size - len(receivedChunks)))
+                chunk = st.session_state.sock.recv(min(65536, expected_size - len(received_buffer)))
                 if not chunk:
                     break
-                receivedChunks += chunk
+                received_buffer.extend(chunk)
+                    if expected_size > 0:
+                        progress_bar.progress(min(len(received_buffer) / expected_size, 1.0))
 
-            st.success("The file was successfully received to me!")
+                st.success("The file was successfully received!")
 
-            st.download_button("Download file, save to computer", data=receivedChunks, file_name=filename)
+                st.download_button("Download file, save to computer", data=bytes(received_buffer), file_name=filename)
         
         else:
             # Catch any other possible error responses
             st.error(downloadRSP)
+    except Exception as e:
+            st.error(f"Download error: {e}")
 
 # ======== DELETE ========
 elif choice == "Delete":
