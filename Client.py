@@ -347,11 +347,32 @@ elif choice == "Delete":
 
     st.header("Delete Files")
 
+    # Kamini
+    filename = st.text_input("Choose a file: ")
 
     if st.button("Delete File"):
-        pass  # Temp placeholder
-        # code that corresponds to sending commands and receiving responses
+        
+        deleteRSP = sendCommand(f"DELETE {filename}")
 
+    # Kamini - check if filename provided:
+    if "Error: No filename provided" in deleteRSP:
+        st.error("Please provide a filename")
+
+    # Kamini - check if the filename is in the ignored files (this is to protect core server files from deletion):
+    elif "Permission denied" in deleteRSP:
+        st.error("File cannot be deleted.")
+
+    # kamini - successful file deletion:
+    elif "deleted successfully" in deleteRSP:
+        st.success("File deleted successfully")
+
+    # Kamini - unsuccessful file deletion:
+    elif "does not exist" in deleteRSP:
+        st.error("File does not exist. Failed to delete file.")
+
+    else:
+        # Catch any other possible error responses
+        st.error(deleteRSP)
 
 # ======== DIR ========
 elif choice == "Dir":
