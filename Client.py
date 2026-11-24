@@ -445,7 +445,7 @@ elif choice == "Subfolder":
             st.error("Error: the subfolder does not exist.")
 
         # Kamini - if folder is empty or cannot be removed
-        elif "is empty or cannot be removed" in subfolderRSP:
+        elif "is not empty or cannot be removed" in subfolderRSP:
             st.error("Error: the folder is empty or cannot be removed")
 
         # Kamini - if folder was not deleted successfully:
