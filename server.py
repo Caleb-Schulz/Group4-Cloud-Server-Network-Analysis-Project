@@ -295,7 +295,8 @@ def handle_client(client_socket, address):
                     continue
                 
                 # Protect core server files from accidental deletion
-                if os.path.basename(file_path) in ignored_files:
+                protected_delete_files = ignored_files | {"network_metrics.db"}
+                if os.path.basename(file_path) in protected_delete_files:
                     response = f"Error: Permission denied. Cannot delete '{filename}'.\n"
                     client_socket.sendall(response.encode('utf-8'))
                     continue
