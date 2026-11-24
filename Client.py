@@ -410,9 +410,48 @@ elif choice == "Subfolder":
 
     st.write("You Selected:", action)
 
-    folderPath = st.text_input("Subfolder Path/Name")
+    folderPath = st.text_input("Enter the subfolder's name: ")
 
     if st.button("Submit"):
-        pass  # Temp placeholder
-        # code that corresponds to sending commands and receiving responses
 
+        # Kamini - simplicity, uses the choice for either option here:
+        # Kamini - sending two variables here
+        # Kamini - choice is the variable for create or delete the subfolder
+        # Kamini - folderPath is the name of the subfolder
+        subfolderRSP = sendCommand(f"SUBFOLDER {action <folderPath>}")
+
+        # Kamini - check for valid syntax:
+        if "Invalid syntax" in subfolderRSP:
+            st.error("Invalid syntax, please enter with choice of 'create' or 'delete' for subfolder command.")
+
+        # Kamini - check if storage path is valid
+        elif "Invalid path outside storage directory" in subfolderRSP:
+            st.error("Your chosen path is invalid. Please choose a valid storage path.")
+
+        # Kamini - if folder created successfully:
+        elif "created successfully." in subfolderRSP:
+            st.success("Your folder was created sucessfully!")
+
+        # Kamini - if folder was not created successfully:
+        elif "Failed to create subfolder" in subfolderRSP:
+            st.error("Error in creating your subfolder.")
+
+        # Kamini - if folder was deleted successfully:
+        elif "deleted successfully" in subfolderRSP:
+            st.success("Your folder was deleted successfully!")
+
+        # Kamini - if folder does not exist
+        elif "does not exist" in subfolderRSP:
+            st.error("Error: the subfolder does not exist.")
+
+        # Kamini - if folder is empty or cannot be removed
+        elif "is empty or cannot be removed" in subfolderRSP:
+            st.error("Error: the folder is empty or cannot be removed")
+
+        # Kamini - if folder was not deleted successfully:
+        elif "Failed to delete subfolder" in deleteRSP:
+            st.error("Error in deleting your subfolder") 
+        
+        else:
+            # Catch any other possible error responses
+            st.error(downloadRSP)
