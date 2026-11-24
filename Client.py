@@ -84,6 +84,13 @@ def sendCommand(command):
         
         return f"ERROR: Connection Lost ({e})"
 
+def getAvailableFiles():
+    dir_resp = sendCommand("DIR")
+    if dir_resp.startswith("Files in storage -> "):
+        raw_list = dir_resp.replace("Files in storage -> ", "", 1)
+        return [f.strip() for f in raw_list.split(",") if f.strip()]
+    return []
+
 # ============ STREAMLIT UI ============
 
 st.title("Cloud Server File Request & Transfer") # Title for the application
@@ -321,52 +328,56 @@ elif choice == "Download":
 
     st.header("Download Files")
 
-    filename = st.text_input("Enter the file to download:")
+    available_files = getAvailableFiles()
+    if not available_files:
+        st.info("No files currently available in storage.")
+    else:
+        filename = st.selectbox("Select a file to download:", available_files)
 
-    if st.button("Request File"):
-        try:
-            # Send command directly 
-            st.session_state.sock.sendall(f"DOWNLOAD {filename}\n".encode('utf-8'))
-
-            # Read ONLY until the first newline '\n' so binary file bytes aren't decoded as UTF-8
-            header_bytes = b""
-            while not header_bytes.endswith(b"\n"):
-                byte = st.session_state.sock.recv(1)
-                if not byte:
-                    break
-                header_bytes += byte
-
-            downloadRSP = header_bytes.decode('utf-8').strip()
-
-        # Kamini - check if filename is provided:
-        if "No filename provided" in downloadRSP:
-            st.error("Please provide a filename.")
-
-        # Kamini - check if the file exists:
-        elif "does not exist" in downloadRSP:
-            st.error("The filename does not exist.")
-
-        # Kamini - signal and send file size information:
-        elif "Sending file" in downloadRSP:
-            expected_size = int(downloadRSP.split("(")[1].split(" ")[0])
-            received_buffer = bytearray()
-            progress_bar = st.progress(0)
-
-            while len(receivedChunks) < expected_size:
-                chunk = st.session_state.sock.recv(min(65536, expected_size - len(received_buffer)))
-                if not chunk:
-                    break
-                received_buffer.extend(chunk)
-                    if expected_size > 0:
-                        progress_bar.progress(min(len(received_buffer) / expected_size, 1.0))
-
-                st.success("The file was successfully received!")
-
-                st.download_button("Download file, save to computer", data=bytes(received_buffer), file_name=filename)
-        
-        else:
-            # Catch any other possible error responses
-            st.error(downloadRSP)
+        if st.button("Request File"):
+            try:
+                # Send command directly 
+                st.session_state.sock.sendall(f"DOWNLOAD {filename}\n".encode('utf-8'))
+    
+                # Read ONLY until the first newline '\n' so binary file bytes aren't decoded as UTF-8
+                header_bytes = b""
+                while not header_bytes.endswith(b"\n"):
+                    byte = st.session_state.sock.recv(1)
+                    if not byte:
+                        break
+                    header_bytes += byte
+    
+                downloadRSP = header_bytes.decode('utf-8').strip()
+    
+            # Kamini - check if filename is provided:
+            if "No filename provided" in downloadRSP:
+                st.error("Please provide a filename.")
+    
+            # Kamini - check if the file exists:
+            elif "does not exist" in downloadRSP:
+                st.error("The filename does not exist.")
+    
+            # Kamini - signal and send file size information:
+            elif "Sending file" in downloadRSP:
+                expected_size = int(downloadRSP.split("(")[1].split(" ")[0])
+                received_buffer = bytearray()
+                progress_bar = st.progress(0)
+    
+                while len(receivedChunks) < expected_size:
+                    chunk = st.session_state.sock.recv(min(65536, expected_size - len(received_buffer)))
+                    if not chunk:
+                        break
+                    received_buffer.extend(chunk)
+                        if expected_size > 0:
+                            progress_bar.progress(min(len(received_buffer) / expected_size, 1.0))
+    
+                    st.success("The file was successfully received!")
+    
+                    st.download_button("Download file, save to computer", data=bytes(received_buffer), file_name=filename)
+            
+            else:
+                # Catch any other possible error responses
+                st.error(downloadRSP)
     except Exception as e:
             st.error(f"Download error: {e}")
 
@@ -375,32 +386,36 @@ elif choice == "Delete":
 
     st.header("Delete Files")
 
-    # Kamini
-    filename = st.text_input("Choose a file: ")
+    available_files = getAvailableFiles()
+    if not available_files:
+        st.info("No files currently available in storage.")
+    else:
+        filename = st.selectbox("Select a file to delete:", available_files)
 
-    if st.button("Delete File"):
+        # Kamini
+        if st.button("Delete File"):
+            
+            deleteRSP = sendCommand(f"DELETE {filename}")
+    
+            # Kamini - check if filename provided:
+            if "Error: No filename provided" in deleteRSP:
+                st.error("Please provide a filename")
         
-        deleteRSP = sendCommand(f"DELETE {filename}")
-
-        # Kamini - check if filename provided:
-        if "Error: No filename provided" in deleteRSP:
-            st.error("Please provide a filename")
-    
-        # Kamini - check if the filename is in the ignored files (this is to protect core server files from deletion):
-        elif "Permission denied" in deleteRSP:
-            st.error("File cannot be deleted.")
-    
-        # kamini - successful file deletion:
-        elif "deleted successfully" in deleteRSP:
-            st.success("File deleted successfully")
-    
-        # Kamini - unsuccessful file deletion:
-        elif "does not exist" in deleteRSP:
-            st.error("File does not exist. Failed to delete file.")
-    
-        else:
-            # Catch any other possible error responses
-            st.error(deleteRSP)
+            # Kamini - check if the filename is in the ignored files (this is to protect core server files from deletion):
+            elif "Permission denied" in deleteRSP:
+                st.error("File cannot be deleted.")
+        
+            # kamini - successful file deletion:
+            elif "deleted successfully" in deleteRSP:
+                st.success("File deleted successfully")
+        
+            # Kamini - unsuccessful file deletion:
+            elif "does not exist" in deleteRSP:
+                st.error("File does not exist. Failed to delete file.")
+        
+            else:
+                # Catch any other possible error responses
+                st.error(deleteRSP)
 
 # ======== DIR ========
 elif choice == "Dir":
