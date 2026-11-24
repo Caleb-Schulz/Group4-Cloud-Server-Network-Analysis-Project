@@ -228,6 +228,7 @@ def handle_client(client_socket, address):
                         
                         # Measure download metrics using your teammate's analyzer
                         metrics_analyzer.save_transfer_metrics("DOWNLOAD", filename, file_size, transfer_time)
+                        continue
                     except Exception as e:
                         response = f"Error: Failed to send file -> {e}\n"
                         client_socket.sendall(response.encode('utf-8'))
