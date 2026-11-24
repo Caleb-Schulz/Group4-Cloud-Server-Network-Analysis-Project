@@ -19,15 +19,15 @@ import requests
 
 #file operations:
 
-#Upload: [1==Text, 2==Audio, 3==Video]
+#Upload: [1 == Text,  2 == Audio, 3 == Video]
 
-#Download: [4==Text,Audio,Video]
+#Download: [4 == Any type]
 
-#Delete: [5==Text, 6==Audio, 7==Video]
+#Delete: [5 == Any type]
 
-#view directory: [8==view directory]
+#view directory: [6 == view directory]
 
-#Subfolder: [9 == Subfolder]
+#Subfolder: [7 == Subfolder]
 
 
 print("Choose a file operation you want to perform\n")
@@ -35,27 +35,28 @@ print("Choose a file operation you want to perform\n")
 print("Enter 1 for Upload Text File") #done
 print("Enter 2 for Upload Audio File") #done
 print("Enter 3 for Upload Video File") #done
-print("Enter 4 for Download Text File") #done
-print("Enter 5 for Delete Text File") #done
-#print("Enter 6 for Delete Audio File")
-#print("Enter 7 for Delete Video File")
-print("Enter 8 to View Directory") #done
-print("Enter 9 for Subfolder") #done
+print("Enter 4 for Download a File") #done
+print("Enter 5 for Delete a File") #done
+print("Enter 6 to View Directory") #done
+print("Enter 7 for Subfolder") #done
 
 file_operation=int(input("Enter a choice: "))
 
 
-#if statement: file operation number invalid, make user re-enter file_operation choice again
-if file_operation > 9 or file_operation < 1:
 
-    while file_operation > 12 or file_operation < 1:
+#if statement: file operation number invalid, make user re-enter file_operation choice again:
+if file_operation > 7 or file_operation < 1:
+
+    while file_operation > 7 or file_operation < 1:
         print("\nInvalid file operation. Please re-enter a valid number choice:")
         file_operation=int(input("Enter a choice "))
 
 
 
 
-#=================================================[OPTION 1 UPLOAD TEXT FILE]:===================================================
+
+
+#=======================================[OPTION 1 UPLOAD TEXT FILE]:=========================================
 if file_operation == 1:
     filename = st.file_uploader("Choose a file: ", type=txt, max_upload_size=100000)
 
@@ -98,11 +99,13 @@ if file_operation == 1:
     
     else:
         st.info("Please upload a file to proceed.")
+#--------------------------------------------------------------------------------------------------------------
 
 
 
 
-#===================================================[OPTION 2 UPLOAD AUDIO FILE]:===================================================
+
+#=========================================[OPTION 2 UPLOAD AUDIO FILE]:========================================
 if file_operation == 2:
     filename = st.file_uploader("Choose a file: ", type=mp3, max_upload_size=100000)
 
@@ -145,12 +148,13 @@ if file_operation == 2:
     
     else:
         st.info("Please upload a file to proceed.")
+#------------------------------------------------------------------------------------------------------------
 
 
 
 
 
-#================================================[OPTION 3 UPLOAD VIDEO FILE]:===================================================
+#========================================[OPTION 3 UPLOAD VIDEO FILE]:=========================================
 if file_operation == 3:
     filename = st.file_uploader("Choose a file: ", type=mp4, max_upload_size=100000)
 
@@ -193,8 +197,13 @@ if file_operation == 3:
     
     else:
         st.info("Please upload a file to proceed.") 
+#--------------------------------------------------------------------------------------------------------------------
 
-#=================================================[OPTION 4 DOWNLOAD FILE]==============================================
+
+
+
+
+#=============================================[OPTION 4 DOWNLOAD A FILE]==============================================
 if file_operation == 4:
     filename = input("Choose a file: ")
 
@@ -228,6 +237,9 @@ if file_operation == 4:
         st.success("The file was successfully received to me!")
 
         st.download_button("Download file, save to computer", data=receivedChunks, file_name=filename)
+#-------------------------------------------------------------------------------------------------------------------
+
+
 
 
 
@@ -255,13 +267,14 @@ if file_operation == 5:
     #unsuccessful file deletion:
     elif "does not exist" in deleteRSP:
         st.error("File does not exist. Failed to delete file.")
-
-#=---------------------------------------------------------------------------------------------------------------------
-
+#----------------------------------------------------------------------------------------------------------------------
 
 
-#=====================================[OPTION 8 VIEW DIRECTORY]========================================================
-if file_operation == 8:
+
+
+
+#=============================================[OPTION 6 VIEW DIRECTORY]=================================================
+if file_operation == 6:
 
     dirRESP = sendCommand(f"DIR")
 
@@ -271,10 +284,55 @@ if file_operation == 8:
     
     else:
         st.info(dirRESP) #this is supposed to show response string text as a result of viewing directory 
+#-----------------------------------------------------------------------------------------------------------------------
 
 
 
 
-#========================================[OPTION 9 SUBFOLDER]=====================================================
-if file_operation == 9:
-    #need to implement this one now
+
+#===============================================[OPTION 7 SUBFOLDER]====================================================
+if file_operation == 7:
+    
+    #validate which choice the user wants: create or delete a subfolder
+    choice = input("Enter the word 'create' or 'delete' in this option: ")
+    folderPath = input("Enter the subfolder's name: ")
+
+    #simplicity, uses the choice for either option here:
+    #sending two variables here
+    #choice is the variable for create or delete the subfolder
+    #folderPath is the name of the subfolder
+    subfolderRSP = sendCommand(f"SUBFOLDER {choice <folderPath>}")
+
+    
+    #check for valid syntax:
+    if "Invalid syntax" in subfolderRSP:
+        st.error("Invalid syntax, please enter with choice of 'create' or 'delete' for subfolder command.")
+
+    #check if storage path is valid
+    elif "Invalid path outside storage directory" in subfolderRSP:
+        st.error("Your chosen path is invalid. Please choose a valid storage path.")
+
+    #if folder created successfully:
+    elif "created successfully." in subfolderRSP:
+        st.success("Your folder was created sucessfully!")
+
+    #if folder was not created successfully:
+    elif "Failed to create subfolder" in subfolderRSP:
+        st.error("Error in creating your subfolder.")
+
+    #if folder was deleted successfully:
+    elif "deleted successfully" in subfolderRSP:
+        st.success("Your folder was deleted successfully!")
+
+    #if folder does not exist
+    elif "does not exist" in subfolderRSP:
+        st.error("Error: the subfolder does not exist.")
+
+    #if folder is empty or cannot be removed
+    elif "is empty or cannot be removed" in subfolderRSP:
+        st.error("Error: the folder is empty or cannot be removed")
+
+    #if folder was not deleted successfully:
+    elif "Failed to delete subfolder" in deleteRSP:
+        st.error("Error in deleting your subfolder") 
+#-------------------------------------------------------------------------------------------------------------------------
