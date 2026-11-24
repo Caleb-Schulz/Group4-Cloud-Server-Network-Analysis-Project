@@ -118,15 +118,26 @@ def handle_client(client_socket, address):
             # Route the commands
             if command == "DIR":
                 try:
-                    # Filter out server script, environment files, and hidden files
-                    files = [
-                        f for f in os.listdir(STORAGE_DIR) 
-                        if f not in ignored_files and not f.startswith(".")
-                    ]
+                    lines = []
+                    for root, dirs, files in os.walk(STORAGE_DIR):
+                        # Filter out hidden directories and ignored files
+                        dirs[:] = sorted([d for d in dirs if not d.startswith(".") and d not in ignored_files])
+                        valid_files = sorted([f for f in files if not f.startswith(".") and f not in ignored_files])
 
-                    if files:
-                        file_list = ", ".join(files)
-                        response = f"Files in storage -> {file_list}\n"
+                        rel_path = os.path.relpath(root, STORAGE_DIR)
+                        if rel_path == ".":
+                            for f in valid_files:
+                                lines.append(f)
+                        else:
+                            depth = rel_path.count(os.sep) + 1
+                            indent = "    " * depth
+                            folder_indent = "    " * (depth - 1)
+                            lines.append(f"{folder_indent}[Folder] {os.path.basename(root)}/")
+                            for f in valid_files:
+                                lines.append(f"{indent}{f}")
+
+                    if lines:
+                        response = "Files in storage:\n" + "\n".join(lines) + "\n"
                     else:
                         response = "Storage directory is empty.\n"
                 except Exception as e:
