@@ -12,7 +12,7 @@ cd /mnt/server_storage
 
 Step 2: Run Client
 source venv/bin/activate
-streamlit run Client.py --server.address 0.0.0.0 --server.port 8501
+streamlit run Client.py --server.address 0.0.0.0 --server.port 8501 --server.maxUploadSize 2500
 
 
 To Update Server Files
