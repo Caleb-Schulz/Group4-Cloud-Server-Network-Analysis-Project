@@ -1,16 +1,14 @@
-
 # for python database
 import sqlite3
 # interaction with operating system
 import os
 
-class NetworkAnalyzer:
+class NetworkAnalyzer:   
     # vvv initializes the network server and sets up database
     def __init__(self, db_name="network_metrics.db"):
         # saves database file name
         self.db_name = db_name
         self.init_db()
-
 
     # vvv creates table to hold the transfer metrics
     def init_db(self):
@@ -28,12 +26,13 @@ class NetworkAnalyzer:
                 timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
             )
         ''')
-
         conn.commit()
         conn.close()
 
     # vvv saves metrics in database
     def save_transfer_metrics(self, operation, filename, file_size_bytes, transfer_time_sec):
+        self.init_db()  # Self-heals if network_metrics.db was deleted while running
+
         # b -> Mb
         file_size_mb = file_size_bytes / (1024 * 1024)
 
@@ -58,6 +57,7 @@ class NetworkAnalyzer:
 
     # gets stored transfer metrics from database for analysis
     def get_metrics(self):
+        self.init_db()
         conn = sqlite3.connect(self.db_name)
         cursor = conn.cursor()
         cursor.execute('''
