@@ -86,9 +86,12 @@ def sendCommand(command):
 
 def getAvailableFiles():
     dir_resp = sendCommand("DIR")
-    if dir_resp.startswith("Files in storage -> "):
-        raw_list = dir_resp.replace("Files in storage -> ", "", 1)
-        return [f.strip() for f in raw_list.split(",") if f.strip()]
+    if dir_resp.startswith("Files in storage:\n"):
+        lines = dir_resp.splitlines()[1:]
+        return [
+            line.strip() for line in lines
+            if line and not line.startswith(" ") and not line.startswith("[Folder]")
+        ]
     return []
 
 # ============ STREAMLIT UI ============
@@ -430,9 +433,8 @@ elif choice == "Dir":
         # Kamini - this is for the exception case, addressing this first:
         if "Could not list directory" in dirRESP:
             st.error("Could not view Directory")
-
         else:
-            st.info(dirRESP) # Kamini - this is supposed to show response string text as a result of viewing directory 
+            st.text_area("Directory Contents", value=dirRESP, height=250, disabled=True) # Kamini - this is supposed to show response string text as a result of viewing directory 
 
 
 # ======== SUBFOLDER ========
