@@ -62,7 +62,7 @@ if os.path.exists(env_path):
                 key, val = line.strip().split("=", 1)
                 os.environ[key.strip()] = val.strip()
 
-ignored_files = {"server.py", "analysis.py", "Client.py", ".env", "lost+found", "pycache", "venv", "__pycache__"}
+ignored_files = {"server.py", "analysis.py", "Client.py", ".env", "lost+found", "__pycache__", "venv"}
 
 def authenticate_client(auth_data):
     # Fetch credentials from .env
