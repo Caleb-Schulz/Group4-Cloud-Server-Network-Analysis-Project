@@ -222,17 +222,17 @@ elif choice == "Upload":
     if uploadOption == "Text":
         
         # Kamini - show the upload button for text files
-        filename = st.file_uploader("Choose a file: ", type="txt", max_upload_size=100000)
+        filename = st.file_uploader("Choose a file: ", type="txt")
 
     elif uploadOption == "Audio":
 
         # Kamini - show the upload button for audio files
-        filename = st.file_uploader("Choose a file: ", type="mp3", max_upload_size=100000)
+        filename = st.file_uploader("Choose a file: ", type="mp3")
 
     elif uploadOption == "Video":
 
         # Kamini - show the upload button for video files
-        filename = st.file_uploader("Choose a file: ", type="mp4", max_upload_size=100000)
+        filename = st.file_uploader("Choose a file: ", type="mp4")
 
 
     # Kamini - if the file was uploaded in any of the three formats
@@ -260,14 +260,18 @@ elif choice == "Upload":
                 # Kamini - if file does not exist, we can readily upload it:
                 elif "Ready, send file data" in uploadRESP:
                     st.session_state.sock.sendall(byte_data)
-                    st.success("File Uploaded Successfully!")
+                    final_resp = st.session_state.sock.recv(BUFFER_SIZE).decode('utf-8').strip()
+                    if "uploaded successfully" in final_resp:
+                        st.success(final_resp)
+                    else:
+                        st.error(final_resp)
 
                 # If any other error occur
                 else:
                     st.error(uploadRESP)
 
             except Exception as e:
-            st.error(f"Error reading file: {e}")
+                st.error(f"Error reading file: {e}")
 
 
         # Option to overwrite the current file should be implemeneted
@@ -283,17 +287,25 @@ elif choice == "Upload":
             # Kamini - if client selects 'y', server response is ready, send file data
             if overwrite == "Yes":
                 # Kamini - logic to send 'y' to server
-                st.session_state.sock.sendall("y")
-
-                st.session_state.sock.sendall(byte_data)
-                st.success("File Uploaded Successfully!")
+                st.session_state.sock.sendall(b"y")
+                ready_resp = st.session_state.sock.recv(BUFFER_SIZE).decode('utf-8').strip()
+                if "Ready, send file data" in ready_resp:
+                    st.session_state.sock.sendall(byte_data)
+                    final_resp = st.session_state.sock.recv(BUFFER_SIZE).decode('utf-8').strip()
+                    if "uploaded successfully" in final_resp:
+                        st.success(final_resp)
+                    else:
+                        st.error(final_resp)
+                else:
+                    st.error(ready_resp)
+                st.session_state.ask_overwrite = False
                 
 
             # Kamini - if client selects 'n', server response is upload cancelled by user, and overwrite was cancelled:
             elif overwrite == "No":
                 # Kamini - logic to send 'n' to server
-                st.session_state.sock.sendall("n")
-                response = st.session_state.sock.recv(BUFFER_SIZE).decode('utf-8') # Kamini - client receives the response from the server
+                st.session_state.sock.sendall(b"n")
+                response = st.session_state.sock.recv(BUFFER_SIZE).decode('utf-8').strip() # Kamini - client receives the response from the server
 
                 if "Upload cancelled by user" in response:
                     st.error("Upload Overwrite Cancelled.")
@@ -326,13 +338,14 @@ elif choice == "Download":
 
         # Kamini - signal and send file size information:
         elif "Sending file" in downloadRSP:
+            expected_size = int(downloadRSP.split("(")[1].split(" ")[0])
             receivedChunks = b'' # Kamini - create an empty bytes literal to store bytes in it
 
-            while True:
-                receivedChunks += st.session_state.sock.recv(BUFFER_SIZE) 
-                # Kamini - this keeps adding on the chunks of data from the file we want to download
-                # Kamini - because we need to send the file in chunks, 
-                # Kamini - depending on the size of how many bytes we are allowed to send, based on BUFFER_SIZE
+            while len(receivedChunks) < expected_size:
+                chunk = st.session_state.sock.recv(min(BUFFER_SIZE, expected_size - len(receivedChunks)))
+                if not chunk:
+                    break
+                receivedChunks += chunk
 
             st.success("The file was successfully received to me!")
 
@@ -354,25 +367,25 @@ elif choice == "Delete":
         
         deleteRSP = sendCommand(f"DELETE {filename}")
 
-    # Kamini - check if filename provided:
-    if "Error: No filename provided" in deleteRSP:
-        st.error("Please provide a filename")
-
-    # Kamini - check if the filename is in the ignored files (this is to protect core server files from deletion):
-    elif "Permission denied" in deleteRSP:
-        st.error("File cannot be deleted.")
-
-    # kamini - successful file deletion:
-    elif "deleted successfully" in deleteRSP:
-        st.success("File deleted successfully")
-
-    # Kamini - unsuccessful file deletion:
-    elif "does not exist" in deleteRSP:
-        st.error("File does not exist. Failed to delete file.")
-
-    else:
-        # Catch any other possible error responses
-        st.error(deleteRSP)
+        # Kamini - check if filename provided:
+        if "Error: No filename provided" in deleteRSP:
+            st.error("Please provide a filename")
+    
+        # Kamini - check if the filename is in the ignored files (this is to protect core server files from deletion):
+        elif "Permission denied" in deleteRSP:
+            st.error("File cannot be deleted.")
+    
+        # kamini - successful file deletion:
+        elif "deleted successfully" in deleteRSP:
+            st.success("File deleted successfully")
+    
+        # Kamini - unsuccessful file deletion:
+        elif "does not exist" in deleteRSP:
+            st.error("File does not exist. Failed to delete file.")
+    
+        else:
+            # Catch any other possible error responses
+            st.error(deleteRSP)
 
 # ======== DIR ========
 elif choice == "Dir":
@@ -418,7 +431,7 @@ elif choice == "Subfolder":
         # Kamini - sending two variables here
         # Kamini - choice is the variable for create or delete the subfolder
         # Kamini - folderPath is the name of the subfolder
-        subfolderRSP = sendCommand(f"SUBFOLDER {action <folderPath>}")
+        subfolderRSP = sendCommand(f"SUBFOLDER {action} {folderPath}")
 
         # Kamini - check for valid syntax:
         if "Invalid syntax" in subfolderRSP:
@@ -449,9 +462,9 @@ elif choice == "Subfolder":
             st.error("Error: the folder is empty or cannot be removed")
 
         # Kamini - if folder was not deleted successfully:
-        elif "Failed to delete subfolder" in deleteRSP:
+        elif "Failed to delete subfolder" in subfolderRSP:
             st.error("Error in deleting your subfolder") 
         
         else:
             # Catch any other possible error responses
-            st.error(downloadRSP)
+            st.error(subfolderRSP)
