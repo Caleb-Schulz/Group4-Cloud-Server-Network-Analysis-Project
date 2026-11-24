@@ -94,6 +94,21 @@ def getAvailableFiles():
         ]
     return []
 
+def streamFileToServer(uploaded_file):
+        uploaded_file.seek(0)
+        total_size = uploaded_file.size
+        sent_bytes = 0
+        progress_bar = st.progress(0)
+
+        while True:
+            chunk = uploaded_file.read(65536)
+            if not chunk:
+                break
+            st.session_state.sock.sendall(chunk)
+            sent_bytes += len(chunk)
+            if total_size > 0:
+                progress_bar.progress(min(sent_bytes / total_size, 1.0))
+
 # ============ STREAMLIT UI ============
 
 st.title("Cloud Server File Request & Transfer") # Title for the application
@@ -247,10 +262,8 @@ elif choice == "Upload":
 
     # Kamini - if the file was uploaded in any of the three formats
     if filename is not None:
+        st.write(f"File size: {filename.size / (1024 * 1024):.2f} MB")
 
-        # Kamini - First convert the file into bytes so that the computer can read it
-        byte_data = filename.getvalue()
-    
         if st.button("Upload to Server"):
           
             try: 
@@ -269,7 +282,7 @@ elif choice == "Upload":
 
                 # Kamini - if file does not exist, we can readily upload it:
                 elif "Ready, send file data" in uploadRESP:
-                    st.session_state.sock.sendall(byte_data)
+                    streamFileToServer(filename)
                     final_resp = st.session_state.sock.recv(BUFFER_SIZE).decode('utf-8').strip()
                     if "uploaded successfully" in final_resp:
                         st.success(final_resp)
@@ -300,7 +313,7 @@ elif choice == "Upload":
                 st.session_state.sock.sendall(b"y")
                 ready_resp = st.session_state.sock.recv(BUFFER_SIZE).decode('utf-8').strip()
                 if "Ready, send file data" in ready_resp:
-                    st.session_state.sock.sendall(byte_data)
+                    streamFileToServer(filename)
                     final_resp = st.session_state.sock.recv(BUFFER_SIZE).decode('utf-8').strip()
                     if "uploaded successfully" in final_resp:
                         st.success(final_resp)
