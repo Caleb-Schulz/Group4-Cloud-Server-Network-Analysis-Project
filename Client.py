@@ -86,13 +86,50 @@ def sendCommand(command):
 
 def getAvailableFiles():
     dir_resp = sendCommand("DIR")
-    if dir_resp.startswith("Files in storage:\n"):
-        lines = dir_resp.splitlines()[1:]
-        return [
-            line.strip() for line in lines
-            if line and not line.startswith(" ") and not line.startswith("[Folder]")
-        ]
-    return []
+    if not dir_resp.startswith("Files in storage:\n"):
+        return []
+
+    files = []
+    path_stack = []
+
+    for line in dir_resp.splitlines()[1:]:
+        if not line.strip():
+            continue
+        stripped = line.lstrip(" ")
+        indent_spaces = len(line) - len(stripped)
+        depth = indent_spaces // 4
+
+        if stripped.startswith("[Folder] "):
+            folder_name = stripped.replace("[Folder] ", "", 1).rstrip("/")
+            path_stack = path_stack[:depth]
+            path_stack.append(folder_name)
+        else:
+            path_stack = path_stack[:depth]
+            rel_file = "/".join(path_stack + [stripped])
+            files.append(rel_file)
+
+    return files
+
+def getAvailableSubfolders():
+    dir_resp = sendCommand("DIR")
+    if not dir_resp.startswith("Files in storage:\n"):
+        return []
+
+    subfolders = []
+    path_stack = []
+
+    for line in dir_resp.splitlines()[1:]:
+        stripped = line.lstrip(" ")
+        if stripped.startswith("[Folder] "):
+            indent_spaces = len(line) - len(stripped)
+            depth = indent_spaces // 4
+            folder_name = stripped.replace("[Folder] ", "", 1).rstrip("/")
+
+            path_stack = path_stack[:depth]
+            path_stack.append(folder_name)
+            subfolders.append("/".join(path_stack))
+
+    return subfolders
 
 def streamFileToServer(uploaded_file):
         uploaded_file.seek(0)
@@ -264,12 +301,23 @@ elif choice == "Upload":
     if filename is not None:
         st.write(f"File size: {filename.size / (1024 * 1024):.2f} MB")
 
+        # Destination folder selector
+        folder_options = ["Root (Main Storage)"] + getAvailableSubfolders()
+        target_folder = st.selectbox("Select destination folder:", folder_options)
+
+        # Build relative path for server
+        upload_target = (
+            filename.name
+            if target_folder == "Root (Main Storage)"
+            else f"{target_folder}/{filename.name}"
+        )
+
         if st.button("Upload to Server"):
           
             try: 
                 # Kamini - Next, process the uploaded file:
                 # Kamini - uploadRESP is the variable which holds the result of the server's response to the UPLOAD command
-                uploadRESP = sendCommand(f"UPLOAD {filename.name}")
+                uploadRESP = sendCommand(f"UPLOAD {upload_target}")
 
                 # Kamini -check for filename provided:
                 if "Error: No filename provided" in uploadRESP:  
@@ -388,7 +436,7 @@ elif choice == "Download":
                             progress_bar.progress(min(len(received_buffer) / expected_size, 1.0))
 
                     st.success("The file was successfully received!")
-                    st.download_button("Download file, save to computer", data=bytes(received_buffer), file_name=filename)
+                    st.download_button("Download File (save to computer)", data=bytes(received_buffer), file_name=os.path.basename(filename))
 
                 else:
                     # Catch any other possible error responses
@@ -467,9 +515,18 @@ elif choice == "Subfolder":
 
     st.write("You Selected:", action)
 
-    folderPath = st.text_input("Enter the subfolder's name: ")
+    folderPath = None
 
-    if st.button("Submit"):
+    if action == "create":
+        folderPath = st.text_input("Enter the new subfolder's name: ")
+    elif action == "delete":
+        available_folders = getAvailableSubfolders()
+        if not available_folders:
+            st.info("No subfolders currently available to delete.")
+        else:
+            folderPath = st.selectbox("Select a subfolder to delete:", available_folders)
+
+    if action and folderPath and st.button("Submit"):
 
         # Kamini - simplicity, uses the choice for either option here:
         # Kamini - sending two variables here
