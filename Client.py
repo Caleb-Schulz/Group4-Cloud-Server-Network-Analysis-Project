@@ -448,7 +448,10 @@ elif choice == "Delete":
 
     st.header("Delete Files")
 
-    available_files = getAvailableFiles()
+    available_files = [
+        f for f in getAvailableFiles()
+        if os.path.basename(f) != "network_metrics.db"
+    ]
     if not available_files:
         st.info("No files currently available in storage.")
     else:
