@@ -62,7 +62,7 @@ if file_operation == 1:
 
     #First convert the file into bytes so that the computer can read it
     if filename is not None:
-        byte_data = upload_file.getvalue()
+        byte_data = filename.getvalue()
 
         #Next, process the uploaded file:
         try:
@@ -111,7 +111,7 @@ if file_operation == 2:
 
     #First convert the file into bytes so that the computer can read it
     if filename is not None:
-        byte_data = upload_file.getvalue()
+        byte_data = filename.getvalue()
 
         #Next, process the uploaded file:
         try:
