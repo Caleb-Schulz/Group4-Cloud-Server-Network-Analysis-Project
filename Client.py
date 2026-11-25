@@ -353,12 +353,14 @@ elif choice == "Upload":
                 "Overwrite existing file?", 
                     ["Yes", "No"],
                     index=None,
+                    key="overwrite_radio"
             )
 
             # Kamini - if client selects 'y', server response is ready, send file data
             if overwrite == "Yes":
                 # Kamini - logic to send 'y' to server
-                st.session_state.sock.sendall(b"y")
+                st.session_state.ask_overwrite = False
+                st.session_state.sock.sendall(b"y\n")
                 ready_resp = st.session_state.sock.recv(BUFFER_SIZE).decode('utf-8').strip()
                 if "Ready, send file data" in ready_resp:
                     streamFileToServer(filename)
@@ -369,19 +371,16 @@ elif choice == "Upload":
                         st.error(final_resp)
                 else:
                     st.error(ready_resp)
-                st.session_state.ask_overwrite = False
                 
 
             # Kamini - if client selects 'n', server response is upload cancelled by user, and overwrite was cancelled:
             elif overwrite == "No":
                 # Kamini - logic to send 'n' to server
-                st.session_state.sock.sendall(b"n")
-                response = st.session_state.sock.recv(BUFFER_SIZE).decode('utf-8').strip() # Kamini - client receives the response from the server
-
+                st.session_state.ask_overwrite = False
+                st.session_state.sock.sendall(b"n\n")
+                response = st.session_state.sock.recv(BUFFER_SIZE).decode('utf-8').strip()
                 if "Upload cancelled by user" in response:
                     st.error("Upload Overwrite Cancelled.")
-                
-                st.session_state.ask_overwrite = False
 
 
     else:
