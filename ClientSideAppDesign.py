@@ -333,6 +333,6 @@ if file_operation == 7:
         st.error("Error: the folder is empty or cannot be removed")
 
     #if folder was not deleted successfully:
-    elif "Failed to delete subfolder" in deleteRSP:
+    elif "Failed to delete subfolder" in subfolderRSP:
         st.error("Error in deleting your subfolder") 
 #-------------------------------------------------------------------------------------------------------------------------
