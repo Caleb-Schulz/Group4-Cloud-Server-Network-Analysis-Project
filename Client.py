@@ -29,9 +29,13 @@ If you are running this code first time, and you don't have streamlit installed,
 # 1) First install 'pip install streamlit'
 # 2) Then, 'streamlit run Client.py --server.address 0.0.0.0 --server.port 8501'
 
+import os
+if os.path.exists("/mnt/server_storage"):
+    os.makedirs("/mnt/server_storage/tmp", exist_ok=True)
+    os.environ["TMPDIR"] = "/mnt/server_storage/tmp"
+
 import streamlit as st
 import socket
-import os
 import hashlib
 
 # ============ CONFIGURATION (Network Connection & Logics) ============
@@ -313,7 +317,8 @@ elif choice == "Upload":
         )
 
         if st.button("Upload to Server"):
-          
+            st.session_state.ask_overwrite = False
+            st.session_state.pop("overwrite_radio", None)
             try: 
                 # Kamini - Next, process the uploaded file:
                 # Kamini - uploadRESP is the variable which holds the result of the server's response to the UPLOAD command
