@@ -305,10 +305,20 @@ elif choice == "Upload":
     if filename is not None:
         st.write(f"File size: {filename.size / (1024 * 1024):.2f} MB")
 
-        # Destination folder selector
-        folder_options = ["Root (Main Storage)"] + getAvailableSubfolders()
-        target_folder = st.selectbox("Select destination folder:", folder_options)
+        if "cached_subfolders" not in st.session_state:
+            st.session_state.cached_subfolders = getAvailableSubfolders()
 
+        col_folder, col_refresh = st.columns([4, 1])
+        with col_folder:
+            folder_options = ["Root (Main Storage)"] + st.session_state.cached_subfolders
+            target_folder = st.selectbox("Select destination folder:", folder_options)
+        with col_refresh:
+            st.write("")
+            st.write("")
+            if st.button("↻", help="Refresh folder list"):
+                st.session_state.cached_subfolders = getAvailableSubfolders()
+                st.rerun()
+        
         # Build relative path for server
         upload_target = (
             filename.name
@@ -551,6 +561,7 @@ elif choice == "Subfolder":
 
         # Kamini - if folder created successfully:
         elif "created successfully." in subfolderRSP:
+            st.session_state.pop("cached_subfolders", None)
             st.success("Your folder was created sucessfully!")
 
         # Kamini - if folder was not created successfully:
@@ -559,6 +570,7 @@ elif choice == "Subfolder":
 
         # Kamini - if folder was deleted successfully:
         elif "deleted successfully" in subfolderRSP:
+            st.session_state.pop("cached_subfolders", None)
             st.success("Your folder was deleted successfully!")
 
         # Kamini - if folder does not exist
