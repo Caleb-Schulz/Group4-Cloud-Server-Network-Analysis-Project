@@ -245,7 +245,7 @@ if choice == "Connect":
             st.session_state.connected = False
             st.session_state.authenticated = False
 
-            st.info("Disconnrcted From Server.")
+            st.info("Disconnected From Server.")
 
 
 # Last part to guard the file operations
